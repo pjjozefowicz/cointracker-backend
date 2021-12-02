@@ -1,5 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const sequalize = require('./utils/database')
+const Balance = require('./models/balances')
 
 const feedRoutes = require('./routes/feed');
 
@@ -18,4 +20,12 @@ app.use((req, res, next) => {
 // app.use('/')
 app.use('/feed', feedRoutes);
 
-app.listen(8080);
+sequalize.sync()
+.then(result => {
+    console.log(result)
+    app.listen(8080);
+})
+.catch(err => {
+    console.log(err)
+})
+
