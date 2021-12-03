@@ -10,7 +10,7 @@ const Balance = sequalize.define('balances', {
         primaryKey: true,
     },
     amount: {
-        type: Sequalize.DOUBLE(),
+        type: Sequalize.DECIMAL(),
         allowNull: false,
     },
     portoflio_id: {

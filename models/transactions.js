@@ -11,15 +11,15 @@ const Transaction = sequalize.define('transactions', {
         primaryKey: true,
     },
     rate: {
-        type: Sequalize.DOUBLE(4), //User inputs the rate value, we need .1234 numbers
+        type: Sequalize.DECIMAL(), //User inputs the rate value, we need .1234 numbers
         allowNull: false,
     },
     amount: {
-        type: Sequalize.DOUBLE(8), //User inputs the amount value, we need .12345678 numbers similar to Revoult
+        type: Sequalize.DECIMAL(), //User inputs the amount value, we need .12345678 numbers similar to Revoult
         allowNull: false,
     },
     total_spent: {
-        type: Sequalize.DOUBLE(4), //User inputs the total_spent value, we need .1234 numbers
+        type: Sequalize.DECIMAL(), //User inputs the total_spent value, we need .1234 numbers
         allowNull: false,
     },
     transaction_type: {
@@ -39,7 +39,7 @@ const Transaction = sequalize.define('transactions', {
         allowNull: true,
     },
     transaction_fee: {
-        type: Sequalize.DOUBLE(4), //User inputs the fee value, we need .1234 numbers
+        type: Sequalize.DECIMAL(), //User inputs the fee value, we need .1234 numbers
         allowNull: false,
     },
     transaction_note: {
