@@ -1,6 +1,11 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const sequalize = require('./utils/database')
+const Balance = require('./models/balances')
+const Cryptocurrency = require('./models/cryptocurrencies')
+const Portfolio = require('./models/portfolios')
+const Transaction = require('./models/transactions')
+const User = require('./models/users')
 
 const feedRoutes = require('./routes/feed');
 const accountRoutes = require('./routes/account')
@@ -26,6 +31,8 @@ app.use('/admin', adminRoutes);
 app.use('/assets', assetsRoutes);
 // app.use('/')
 
+//sequalize.drop() // DATABASE DROP
+//sequalize.sync() // Need to declare const XXXX = require('./models/...') to work
 // sequalize.sync()
 // .then(result => {
 //     console.log(result)
