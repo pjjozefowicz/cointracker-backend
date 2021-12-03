@@ -2,6 +2,10 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const sequalize = require('./utils/database')
 const Balance = require('./models/balances')
+const Cryptocurrency = require('./models/cryptocurrencies')
+const Portfolio = require('./models/portfolios')
+const Transaction = require('./models/transactions')
+const User = require('./models/users')
 
 const feedRoutes = require('./routes/feed');
 
@@ -19,8 +23,8 @@ app.use((req, res, next) => {
 
 // app.use('/')
 app.use('/feed', feedRoutes);
-
-sequalize.sync()
+//sequalize.drop() // DATABASE DROP
+sequalize.sync() // Need to declare const XXXX = require('./models/...') to work
 .then(result => {
     console.log(result)
     app.listen(8080);
