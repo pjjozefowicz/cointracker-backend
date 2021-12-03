@@ -1,9 +1,11 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const sequalize = require('./utils/database')
-const Balance = require('./models/balances')
 
 const feedRoutes = require('./routes/feed');
+const accountRoutes = require('./routes/account')
+const assetsRoutes = require('./routes/assets')
+const adminRoutes = require('./routes/admin')
 
 const app = express();
 
@@ -17,15 +19,20 @@ app.use((req, res, next) => {
     next();
 });
 
-// app.use('/')
-app.use('/feed', feedRoutes);
 
-sequalize.sync()
-.then(result => {
-    console.log(result)
-    app.listen(8080);
-})
-.catch(err => {
-    console.log(err)
-})
+app.use('/feed', feedRoutes);
+app.use('/account', accountRoutes);
+app.use('/admin', adminRoutes);
+app.use('/assets', assetsRoutes);
+// app.use('/')
+
+// sequalize.sync()
+// .then(result => {
+//     console.log(result)
+//     app.listen(8080);
+// })
+// .catch(err => {
+//     console.log(err)
+// })
+app.listen(8080)
 
