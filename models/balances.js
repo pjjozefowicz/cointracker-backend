@@ -13,7 +13,7 @@ const Balance = sequalize.define('balances', {
         type: Sequalize.DECIMAL(),
         allowNull: false,
     },
-    portoflio_id: {
+    portfolio_id: {
         type: Sequalize.UUID(),
         allowNull: false,
     }

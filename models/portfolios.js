@@ -11,7 +11,7 @@ const Portfolio = sequalize.define('portfolios', {
         allowNull: false,
         primaryKey: true,
     },
-    portfolio_name: {
+    name: {
         type: Sequalize.CHAR(32),
         allowNull: false,
     },

@@ -31,15 +31,16 @@ app.use('/admin', adminRoutes);
 app.use('/assets', assetsRoutes);
 // app.use('/')
 
-//sequalize.drop() // DATABASE DROP
+// sequalize.drop() 
 //sequalize.sync() // Need to declare const XXXX = require('./models/...') to work
-// sequalize.sync()
-// .then(result => {
-//     console.log(result)
-//     app.listen(8080);
-// })
-// .catch(err => {
-//     console.log(err)
-// })
-app.listen(8080)
+sequalize.sync()
+.then(result => {
+    // console.log(result)
+    console.log('success')
+    app.listen(8085);
+})
+.catch(err => {
+    console.log(err)
+})
+// app.listen(8085)
 

@@ -4,10 +4,19 @@ const assetsController = require('../controllers/assets');
 
 const router = express.Router();
 
-// // GET /feed/posts
-// router.get('/posts', feedController.getPosts);
+// GET /assets/coins
+router.get('/coins', assetsController.getCoins);
 
-// // POST /feed/post
-// router.post('/post', feedController.createPost);
+// GET /assets/coin/:coin_id
+router.get('/coin/:coin_id', assetsController.getCoin);
+
+// POST /assets/coin
+router.post('/coin', assetsController.createCoin);
+
+// DELETE /assets/coin/coin_id
+router.delete('/coin/:coin_id', assetsController.deleteCoin);
+
+// UPDATE /assets/coin/coin_id
+router.put('/coin/:coin_id', assetsController.updateCoin);
 
 module.exports = router;

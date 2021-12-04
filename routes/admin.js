@@ -4,10 +4,13 @@ const adminController = require('../controllers/admin');
 
 const router = express.Router();
 
-// // GET /feed/posts
-// router.get('/posts', feedController.getPosts);
+// GET /admin/users
+router.get('/users', adminController.getUsers);
 
-// // POST /feed/post
-// router.post('/post', feedController.createPost);
+// POST /admin/user
+router.post('/user', adminController.createUser);
+
+// DELETE /admin/user
+router.delete('/user/:auth_id', adminController.deleteUser);
 
 module.exports = router;

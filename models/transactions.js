@@ -22,7 +22,7 @@ const Transaction = sequalize.define('transactions', {
         type: Sequalize.DECIMAL(), //User inputs the total_spent value, we need .1234 numbers
         allowNull: false,
     },
-    transaction_type: {
+    type: {
         type: Sequalize.CHAR(8), //buy or sell or exchange, max 8 chars
         allowNull: false,
     },
@@ -34,15 +34,15 @@ const Transaction = sequalize.define('transactions', {
         type: Sequalize.UUID, //Used when exchanging, null allowed
         allowNull: false,
     },
-    transaction_date: {
+    date: {
         type: Sequalize.DATE  , //Timestamp for transaction
         allowNull: true,
     },
-    transaction_fee: {
+    fee: {
         type: Sequalize.DECIMAL(), //User inputs the fee value, we need .1234 numbers
         allowNull: false,
     },
-    transaction_note: {
+    note: {
         type: Sequalize.CHAR(256), //Users note about transaction
         allowNull: false,
     },

@@ -1,18 +1,277 @@
-
+const Portfolio = require("../models/portfolios");
+const Transaction = require("../models/transactions");
+const Balance = require("../models/balances");
+const { READCOMMITTED } = require("sequelize/dist/lib/table-hints");
 
 exports.getPortfolios = (req, res, next) => {
-    res.status(200).json({
-      portfolios: [{ title: 'First Post', content: 'This is the first post!' }]
-    });
-  };
-  
-  exports.createPost = (req, res, next) => {
-    const title = req.body.title;
-    const content = req.body.content;
-    // Create post in db
-    res.status(201).json({
-      message: 'Post created successfully!',
-      post: { id: new Date().toISOString(), title: title, content: content }
-    });
-  };
-  
+  Portfolio.findAll()
+    .then((portfolios) => res.status(200).json(portfolios))
+    .catch(res.status(500));
+};
+
+exports.getPortfolio = (req, res, next) => {
+  const portfolio_id = req.params.portfolio_id;
+  Portfolio.findByPk(portfolio_id)
+    .then((portfolio) => {
+      if (portfolio === null) {
+        return res.status(404);
+      } else {
+        return res.status(200).json(portfolio);
+      }
+    })
+    .catch(res.status(500));
+};
+
+exports.createPortfolio = (req, res, next) => {
+  const name = req.body.name;
+  const owner_id = req.body.owner_id;
+  Portfolio.create({
+    name: name,
+    owner_id: owner_id,
+  })
+    .then((portfolio) =>
+      res.status(201).json({
+        message: "Portfolio created successfully!",
+        portfolio: portfolio,
+      })
+    )
+    .catch(res.status(500));
+};
+
+exports.deletePortfolio = (req, res, next) => {
+  const portfolio_id = req.params.portfolio_id;
+  Portfolio.destroy({
+    where: {
+      portfolio_id: portfolio_id,
+    },
+  })
+    .then((deleted_count) => {
+      if (deleted_count > 0) {
+        return res.status(200).json({
+          message: "Portfolio deleted successfully!",
+        });
+      } else {
+        return res.status(404).json({
+          message: "There is no such a portfolio",
+        });
+      }
+    })
+    .catch(res.status(500));
+};
+
+exports.updatePortfolio = (req, res, next) => {
+  const portfolio_id = req.params.portfolio_id;
+  const name = req.body.name;
+  Portfolio.update(
+    {
+      name: name,
+    },
+    {
+      where: {
+        portfolio_id: portfolio_id,
+      },
+    }
+  )
+    .then((count) => {
+      if (count > 0) {
+        return res.status(200).json({ message: "Portfolio updated" });
+      } else {
+        return res.status(404).json({ message: "There's no such portfolio" });
+      }
+    })
+    .catch(res.status(500));
+};
+
+exports.getBalances = (req, res, next) => {
+  Balance.findAll()
+    .then((balances) => res.status(200).json(balances))
+    .catch(res.status(500));
+};
+
+exports.getBalance = (req, res, next) => {
+  const balance_id = req.params.balance_id;
+  Balance.findByPk(balance_id)
+    .then((balance) => {
+      if (balance === null) {
+        return res.status(404);
+      } else {
+        return res.status(200).json(balance);
+      }
+    })
+    .catch(res.status(500));
+};
+
+exports.createBalance = (req, res, next) => {
+  const amount = req.body.amount;
+  const portfolio_id = req.body.portfolio_id;
+  const currency_id = req.body.currency_id;
+  Balance.create({
+    amount: amount,
+    portfolio_id: portfolio_id,
+    cryptocurrency_id: currency_id,
+  })
+    .then((balance) =>
+      res.status(201).json({
+        message: "Balance created successfully!",
+        balance: balance,
+      })
+    )
+    .catch(res.status(500));
+};
+
+exports.deleteBalance = (req, res, next) => {
+  const balance_id = req.params.balance_id;
+  Balance.destroy({
+    where: {
+      balance_id: balance_id,
+    },
+  })
+    .then((deleted_count) => {
+      if (deleted_count > 0) {
+        return res.status(200).json({
+          message: "balance deleted successfully!",
+        });
+      } else {
+        return res.status(404).json({
+          message: "There is no such a balance",
+        });
+      }
+    })
+    .catch(res.status(500));
+};
+
+exports.updateBalance = (req, res, next) => {
+  const balance_id = req.params.balance_id;
+  const amount = req.body.amount;
+  Balance.update(
+    {
+      amount: amount,
+    },
+    {
+      where: {
+        balance_id: balance_id,
+      },
+    }
+  )
+    .then((count) => {
+      if (count > 0) {
+        return res.status(200).json({ message: "Balance updated" });
+      } else {
+        return res.status(404).json({ message: "There's no such balance" });
+      }
+    })
+    .catch(res.status(500));
+};
+
+exports.getTransactions = (req, res, next) => {
+  Transaction.findAll()
+    .then((transactions) => res.status(200).json(transactions))
+    .catch(res.status(500));
+};
+
+exports.getTransaction = (req, res, next) => {
+  const transaction_id = req.params.tx_id;
+  Transaction.findByPk(transaction_id)
+    .then((transaction) => {
+      if (transaction === null) {
+        return res.status(404);
+      } else {
+        return res.status(200).json(transaction);
+      }
+    })
+    .catch(res.status(500));
+};
+
+exports.createTransaction = (req, res, next) => {
+  const rate = req.body.rate;
+  const amount = req.body.amount;
+  const total_spent = req.body.total_spent;
+  const type = req.body.type;
+  const base_id = req.body.base_id;
+  const quote_id = req.body.quote_id;
+  const date = req.body.date;
+  const fee = req.body.fee;
+  const note = req.body.note;
+  const portfolio_id = req.body.portfolio_id;
+  Transaction.create({
+    rate: rate,
+    amount: amount,
+    total_spent: total_spent,
+    type: type,
+    base_id: base_id,
+    quote_id: quote_id,
+    date: date,
+    fee: fee,
+    note: note,
+    portfolio_id: portfolio_id,
+  })
+    .then((transaction) =>
+      res.status(201).json({
+        message: "transaction created successfully!",
+        transaction: transaction,
+      })
+    )
+    .catch(res.status(500));
+};
+
+exports.updateTransaction = (req, res, next) => {
+  const transaction_id = req.params.tx_id
+  const rate = req.body.rate;
+  const amount = req.body.amount;
+  const total_spent = req.body.total_spent;
+  const type = req.body.type;
+  const base_id = req.body.base_id;
+  const quote_id = req.body.quote_id;
+  const date = req.body.date;
+  const fee = req.body.fee;
+  const note = req.body.note;
+  const portfolio_id = req.body.portfolio_id;
+  Transaction.update(
+    {
+      rate: rate,
+      amount: amount,
+      total_spent: total_spent,
+      type: type,
+      base_id: base_id,
+      quote_id: quote_id,
+      date: date,
+      fee: fee,
+      note: note,
+      portfolio_id: portfolio_id,
+    },
+    {
+      where: {
+        transaction_id: transaction_id,
+      },
+    }
+  )
+    .then((count) => {
+      if (count > 0) {
+        return res.status(200).json({ message: "transaction updated" });
+      } else {
+        return res.status(404).json({ message: "There's no such transaction" });
+      }
+    })
+    .catch(res.status(500));
+};
+
+exports.deleteTransaction = (req, res, next) => {
+  const transaction_id = req.params.tx_id;
+  Transaction.destroy({
+    where: {
+      transaction_id: transaction_id,
+    },
+  })
+    .then((deleted_count) => {
+      if (deleted_count > 0) {
+        return res.status(200).json({
+          message: "Transaction deleted successfully!",
+        });
+      } else {
+        return res.status(404).json({
+          message: "There is no such transaction",
+        });
+      }
+    })
+    .catch(res.status(500));
+};

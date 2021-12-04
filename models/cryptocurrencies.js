@@ -15,8 +15,12 @@ const Cryptocurrency = sequalize.define('cryptocurrencies', {
         type: Sequalize.CHAR(32),
         allowNull: false,
     },
-    cryptocurrency_name: {
+    name: {
         type: Sequalize.CHAR(32),
+        allowNull: false,
+    },
+    code: {
+        type: Sequalize.CHAR(16),
         allowNull: false,
     }
 })
