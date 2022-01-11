@@ -4,6 +4,7 @@ const sequalize = require('../utils/database')
 const Balance = require('./balances')
 const Transaction = require('./transactions')
 
+
 const Portfolio = sequalize.define('portfolios', {
     portfolio_id: {
         type: Sequalize.UUID,

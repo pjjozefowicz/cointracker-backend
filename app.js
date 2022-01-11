@@ -12,7 +12,9 @@ const accountRoutes = require('./routes/account')
 const assetsRoutes = require('./routes/assets')
 const adminRoutes = require('./routes/admin')
 
+
 const app = express();
+
 
 // app.use(bodyParser.urlencoded()); // x-www-form-urlencoded <form>
 app.use(bodyParser.json()); // application/json
@@ -43,4 +45,3 @@ sequalize.sync()
     console.log(err)
 })
 // app.listen(8085)
-

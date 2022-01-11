@@ -1,4 +1,5 @@
 const Crypto = require("../models/cryptocurrencies");
+const { validationResult } = require('express-validator/check')
 
 exports.getCoins = (req, res, next) => {
   Crypto.findAll()
@@ -23,6 +24,8 @@ exports.createCoin = (req, res, next) => {
   const name = req.body.name;
   const code = req.body.code;
   const coingecko_id = req.body.coingecko_id;
+  const errors = validationResult(req);
+  if (errors.isEmpty()) {
   Crypto.create({
     name: name,
     code: code,
@@ -35,6 +38,11 @@ exports.createCoin = (req, res, next) => {
       })
     )
     .catch(res.status(500));
+  } else {
+      res.status(422).json({
+      message: "Invalid values, coin not created",
+      })
+  }
 };
 
 exports.deleteCoin = (req, res, next) => {

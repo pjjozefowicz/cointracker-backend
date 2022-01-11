@@ -3,6 +3,9 @@ const express = require('express');
 const accountController = require('../controllers/account');
 
 const router = express.Router();
+const { check } = require('express-validator/check');
+const User = require('../models/users');
+const { getUsers } = require('../controllers/admin');
 
 // GET /account/transactions
 router.get('/transactions', accountController.getTransactions);
@@ -11,7 +14,39 @@ router.get('/transactions', accountController.getTransactions);
 router.get('/transaction/:tx_id', accountController.getTransaction);
 
 // POST /account/transaction
-router.post('/transaction', accountController.createTransaction);
+router.post('/transaction',[
+    check('rate')
+    .isInt()
+    .notEmpty(),
+    check('amount')
+    .isInt()
+    .notEmpty(),
+    check('total_spent')
+    .isInt()
+    .notEmpty(),
+    check('type')
+    .isString()
+    .isIn(['Buy','Sell','Exchange']),    
+    check('base_id')
+    .isUUID()
+    .exists()
+    .bail(),
+    check('quote_id')
+    .isUUID()
+    .exists()
+    .bail(),
+    check('date')
+    .isDate()
+    .notEmpty(),
+    check('fee')
+    .isInt()
+    .notEmpty(),
+    check('note')
+    .isString(),
+    check('portfolio_id')
+    .isUUID()
+    .exists(),
+], accountController.createTransaction);
 
 // DELETE /account/transaction/tx_id
 router.delete('/transaction/:tx_id', accountController.deleteTransaction);
@@ -26,7 +61,11 @@ router.get('/portfolios', accountController.getPortfolios);
 router.get('/portfolio/:portfolio_id', accountController.getPortfolio);
 
 // POST /account/portfolio
-router.post('/portfolio', accountController.createPortfolio);
+router.post('/portfolio',[
+    check('owner_id')
+    .isUUID()
+    .exists(),
+],  accountController.createPortfolio);
 
 // DELETE /account/portfolio/:portfolio_id
 router.delete('/portfolio/:portfolio_id', accountController.deletePortfolio);
@@ -41,7 +80,17 @@ router.get('/balances', accountController.getBalances);
 router.get('/balance/:balance_id', accountController.getBalance);
 
 // POST /account/balance
-router.post('/balance', accountController.createBalance);
+router.post('/balance',[
+    check('portfolio_id')
+    .isUUID()
+    .exists()
+    .notEmpty()
+    .bail(),
+    check('currency_id')
+    .isUUID()
+    .exists()
+    .notEmpty(),
+], accountController.createBalance);
 
 // DELETE /account/balance/:balance_id
 router.delete('/balance/:balance_id', accountController.deleteBalance);
