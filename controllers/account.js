@@ -1,7 +1,10 @@
 const Portfolio = require("../models/portfolios");
 const Transaction = require("../models/transactions");
+const User = require("../models/users");
 const Balance = require("../models/balances");
 const { READCOMMITTED } = require("sequelize/dist/lib/table-hints");
+const { validationResult } = require('express-validator/check');
+const Cryptocurrency = require("../models/cryptocurrencies");
 
 exports.getPortfolios = (req, res, next) => {
   Portfolio.findAll()
@@ -25,18 +28,31 @@ exports.getPortfolio = (req, res, next) => {
 exports.createPortfolio = (req, res, next) => {
   const name = req.body.name;
   const owner_id = req.body.owner_id;
-  Portfolio.create({
-    name: name,
-    owner_id: owner_id,
-  })
-    .then((portfolio) =>
-      res.status(201).json({
-        message: "Portfolio created successfully!",
-        portfolio: portfolio,
+  const errors = validationResult(req);
+  if (errors.isEmpty()) { //Check for validation errors from routes folder
+  User.findByPk(owner_id) //Check if UUID exists in database
+  .then((owner) => {
+    if (owner === null){
+      return res.status(422).json({        
+        message: "Invalid UUID" //Should be "UUID not in our DATABASE", but I'm unifying messages"
+      });
+    } else {
+      Portfolio.create({
+        name: name,
+        owner_id: owner_id,
       })
-    )
-    .catch(res.status(500));
-};
+        .then((portfolio) =>
+          res.status(201).json({
+            message: "Portfolio created successfully!",
+            portfolio: portfolio,
+          })
+        )
+    }
+  })} else {
+    return res.status(422).json({
+      message: "Invalid UUID",
+    });
+}};
 
 exports.deletePortfolio = (req, res, next) => {
   const portfolio_id = req.params.portfolio_id;
@@ -105,19 +121,41 @@ exports.createBalance = (req, res, next) => {
   const amount = req.body.amount;
   const portfolio_id = req.body.portfolio_id;
   const currency_id = req.body.currency_id;
-  Balance.create({
-    amount: amount,
-    portfolio_id: portfolio_id,
-    cryptocurrency_id: currency_id,
-  })
-    .then((balance) =>
-      res.status(201).json({
-        message: "Balance created successfully!",
-        balance: balance,
-      })
-    )
-    .catch(res.status(500));
-};
+  const errors = validationResult(req);
+  if (errors.isEmpty()) {
+    Portfolio.findByPk(portfolio_id).then((portfolio) => {
+      if (portfolio === null) {
+        return res.status(422).json({
+          message: "Invalid UUID",
+        })
+      } else {
+        Cryptocurrency.findByPk(currency_id).then((currency) => {
+          if (currency === null) {
+            return res.status(422).json({
+              message: "Invalid UUID",
+            })
+          } else {
+            Balance.create({
+              amount: amount,
+              portfolio_id: portfolio_id,
+              cryptocurrency_id: currency_id,
+            })
+              .then((balance) =>
+                res.status(201).json({
+                  message: "Balance created successfully!",
+                  balance: balance,
+                })
+              )
+          }
+        });
+      }
+    })
+  } else {
+    return res.status(422).json({
+      message: "Invalid UUID",
+    })
+  }
+}
 
 exports.deleteBalance = (req, res, next) => {
   const balance_id = req.params.balance_id;
@@ -193,25 +231,54 @@ exports.createTransaction = (req, res, next) => {
   const fee = req.body.fee;
   const note = req.body.note;
   const portfolio_id = req.body.portfolio_id;
-  Transaction.create({
-    rate: rate,
-    amount: amount,
-    total_spent: total_spent,
-    type: type,
-    base_id: base_id,
-    quote_id: quote_id,
-    date: date,
-    fee: fee,
-    note: note,
-    portfolio_id: portfolio_id,
-  })
-    .then((transaction) =>
-      res.status(201).json({
-        message: "transaction created successfully!",
-        transaction: transaction,
-      })
-    )
-    .catch(res.status(500));
+  const errors = validationResult(req);
+  
+  if (errors.isEmpty()) {
+    Cryptocurrency.findByPk(base_id).then((base) => {
+      if (base === null) {
+        return res.status(422).json({
+          message: "Invalid UUID",
+        })
+      } else {
+        Cryptocurrency.findByPk(quote_id).then((quote) => {
+          if (quote === null) {
+            return res.status(422).json({
+              message: "Invalid UUID",
+            })
+          } else {
+            Portfolio.findByPk(portfolio_id).then((portfolio) => {
+              if (portfolio === null) {
+                return res.status(422).json({
+                  message: "Invalid UUID",
+                })
+              } else { 
+            Transaction.create({
+              rate: rate,
+              amount: amount,
+              total_spent: total_spent,
+              type: type,
+              base_id: base_id,
+              quote_id: quote_id,
+              date: date,
+              fee: fee,
+              note: note,
+              portfolio_id: portfolio_id,
+            })
+              .then((transaction) =>
+                res.status(201).json({
+                  message: "transaction created successfully!",
+                  transaction: transaction,
+                })
+              )}})}
+          }
+        )
+      }
+    })
+  } else {
+    return res.status(422).json({
+      message: "Invalid Validation",
+    })
+  }
 };
 
 exports.updateTransaction = (req, res, next) => {
