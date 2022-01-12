@@ -17,16 +17,22 @@ router.post('/coin',[
     .exists()
     .notEmpty()
     .isString()
+    .trim()
+    .isLength({ max:32 })
     .bail(),
     check('code')
     .exists()
     .notEmpty()
     .isString()
+    .trim()
+    .isLength({ max:16 })
     .bail(),
     check('coingecko_id')
     .exists()
     .notEmpty()
     .isString()
+    .trim()
+    .isLength({ max:32 })
     .bail(),
 ],
 assetsController.createCoin);

@@ -6,6 +6,7 @@ const router = express.Router();
 const { check } = require('express-validator/check');
 const User = require('../models/users');
 const { getUsers } = require('../controllers/admin');
+const { max } = require('pg/lib/defaults');
 
 // GET /account/transactions
 router.get('/transactions', accountController.getTransactions);
@@ -42,7 +43,8 @@ router.post('/transaction',[
     .isInt()
     .notEmpty(),
     check('note')
-    .isString(),
+    .isString()
+    .isLength({ max:5 }),
     check('portfolio_id')
     .isUUID()
     .exists(),
@@ -65,6 +67,11 @@ router.post('/portfolio',[
     check('owner_id')
     .isUUID()
     .exists(),
+    check('name')
+    .isString()
+    .exists()
+    .notEmpty()
+    .isLength({ max:32 }),
 ],  accountController.createPortfolio);
 
 // DELETE /account/portfolio/:portfolio_id

@@ -12,15 +12,15 @@ const Cryptocurrency = sequalize.define('cryptocurrencies', {
         primaryKey: true,
     },
     coingecko_id: {
-        type: Sequalize.CHAR(32),
+        type: Sequalize.STRING(32),
         allowNull: false,
     },
     name: {
-        type: Sequalize.CHAR(32),
+        type: Sequalize.STRING(32),
         allowNull: false,
     },
     code: {
-        type: Sequalize.CHAR(16),
+        type: Sequalize.STRING(16),
         allowNull: false,
     }
 })
