@@ -28,6 +28,7 @@ exports.getPortfolio = (req, res, next) => {
 exports.createPortfolio = (req, res, next) => {
   const name = req.body.name;
   const owner_id = req.body.owner_id;
+  const is_main = req.body.is_main;
   const errors = validationResult(req);
   if (errors.isEmpty()) { //Check for validation errors from routes folder
   User.findByPk(owner_id) //Check if UUID exists in database
@@ -40,6 +41,7 @@ exports.createPortfolio = (req, res, next) => {
       Portfolio.create({
         name: name,
         owner_id: owner_id,
+        is_main: is_main,
       })
         .then((portfolio) =>
           res.status(201).json({

@@ -72,6 +72,10 @@ router.post('/portfolio',[
     .exists()
     .notEmpty()
     .isLength({ max:32 }),
+    check('is_main')
+    .isBoolean()
+    .exists()
+    .notEmpty()
 ],  accountController.createPortfolio);
 
 // DELETE /account/portfolio/:portfolio_id
