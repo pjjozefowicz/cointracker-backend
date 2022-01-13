@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "3ed85b4b-5b4b-4303-a1d3-3e96c10ae472",
+		"_postman_id": "93b564bb-1252-46c9-be04-0ec9a74e369a",
 		"name": "CoinTracker",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -16,25 +16,54 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": null
+								"url": {
+									"raw": "{{url}}/account/balance/id",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"balance",
+										"id"
+									]
+								}
 							},
 							"response": []
 						},
 						{
 							"name": "Create balance",
 							"request": {
-								"method": "GET",
+								"method": "POST",
 								"header": [],
-								"url": null
+								"url": {
+									"raw": "{{url}}/account/balance",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"balance"
+									]
+								}
 							},
 							"response": []
 						},
 						{
 							"name": "Delete balance",
 							"request": {
-								"method": "GET",
+								"method": "DELETE",
 								"header": [],
-								"url": null
+								"url": {
+									"raw": "{{url}}/account/balance/id",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"balance",
+										"id"
+									]
+								}
 							},
 							"response": []
 						},
@@ -43,16 +72,35 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": null
+								"url": {
+									"raw": "{{url}}/account/balances",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"balances"
+									]
+								}
 							},
 							"response": []
 						},
 						{
 							"name": "Update balance",
 							"request": {
-								"method": "GET",
+								"method": "PUT",
 								"header": [],
-								"url": null
+								"url": {
+									"raw": "{{url}}/account/balance/id",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"balance",
+										"id"
+									]
+								}
 							},
 							"response": []
 						}
@@ -64,9 +112,28 @@
 						{
 							"name": "Update transaction",
 							"request": {
-								"method": "GET",
+								"method": "PUT",
 								"header": [],
-								"url": null
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/account/transaction/id",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"transaction",
+										"id"
+									]
+								}
 							},
 							"response": []
 						},
@@ -75,7 +142,16 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": null
+								"url": {
+									"raw": "{{url}}/account/transactions",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"transactions"
+									]
+								}
 							},
 							"response": []
 						},
@@ -84,7 +160,17 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": null
+								"url": {
+									"raw": "{{url}}/account/transaction/id",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"transaction",
+										"id"
+									]
+								}
 							},
 							"response": []
 						},
@@ -103,11 +189,10 @@
 									}
 								},
 								"url": {
-									"raw": "localhost:8085/account/transaction",
+									"raw": "{{url}}/account/transaction",
 									"host": [
-										"localhost"
+										"{{url}}"
 									],
-									"port": "8085",
 									"path": [
 										"account",
 										"transaction"
@@ -119,9 +204,19 @@
 						{
 							"name": "Delete transaction",
 							"request": {
-								"method": "GET",
+								"method": "DELETE",
 								"header": [],
-								"url": null
+								"url": {
+									"raw": "{{url}}/account/transaction/id",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"transaction",
+										"id"
+									]
+								}
 							},
 							"response": []
 						}
@@ -133,9 +228,18 @@
 						{
 							"name": "Create portfolio",
 							"request": {
-								"method": "GET",
+								"method": "POST",
 								"header": [],
-								"url": null
+								"url": {
+									"raw": "{{url}}/account/portfolio",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"portfolio"
+									]
+								}
 							},
 							"response": []
 						},
@@ -144,16 +248,35 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": null
+								"url": {
+									"raw": "{{url}}/account/portfolios",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"portfolios"
+									]
+								}
 							},
 							"response": []
 						},
 						{
 							"name": "Update portfolio",
 							"request": {
-								"method": "GET",
+								"method": "PUT",
 								"header": [],
-								"url": null
+								"url": {
+									"raw": "{{url}}/account/portfolio/id",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"portfolio",
+										"id"
+									]
+								}
 							},
 							"response": []
 						},
@@ -162,16 +285,36 @@
 							"request": {
 								"method": "GET",
 								"header": [],
-								"url": null
+								"url": {
+									"raw": "{{url}}/account/portfolio/id",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"portfolio",
+										"id"
+									]
+								}
 							},
 							"response": []
 						},
 						{
 							"name": "Delete portfolio by id",
 							"request": {
-								"method": "GET",
+								"method": "DELETE",
 								"header": [],
-								"url": null
+								"url": {
+									"raw": "{{url}}/account/portfolio/id",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"portfolio",
+										"id"
+									]
+								}
 							},
 							"response": []
 						}
@@ -197,11 +340,10 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8085/assets/coin/73841194-6550-4ae7-8718-fc2aaf512148",
+							"raw": "{{url}}/assets/coin/73841194-6550-4ae7-8718-fc2aaf512148",
 							"host": [
-								"localhost"
+								"{{url}}"
 							],
-							"port": "8085",
 							"path": [
 								"assets",
 								"coin",
@@ -216,7 +358,24 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": null
+						"url": {
+							"raw": "{{url}}/assets/coin/id",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"assets",
+								"coin",
+								"id"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
 					},
 					"response": []
 				},
@@ -235,11 +394,10 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8085/assets/coin",
+							"raw": "{{url}}/assets/coin",
 							"host": [
-								"localhost"
+								"{{url}}"
 							],
-							"port": "8085",
 							"path": [
 								"assets",
 								"coin"
@@ -263,11 +421,10 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8085/assets/coin",
+							"raw": "{{url}}/assets/coin",
 							"host": [
-								"localhost"
+								"{{url}}"
 							],
-							"port": "8085",
 							"path": [
 								"assets",
 								"coin"
@@ -281,7 +438,16 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": null
+						"url": {
+							"raw": "{{url}}/assets/coins",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"assets",
+								"coins"
+							]
+						}
 					},
 					"response": []
 				}
@@ -295,7 +461,16 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": null
+						"url": {
+							"raw": "{{url}}/admin/users",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"admin",
+								"users"
+							]
+						}
 					},
 					"response": []
 				},
@@ -306,7 +481,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"auth0_id\": 12345678 \n}",
+							"raw": "{\n    \"auth0_id\": 9549589\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -314,11 +489,10 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8085/admin/user",
+							"raw": "{{url}}/admin/user",
 							"host": [
-								"localhost"
+								"{{url}}"
 							],
-							"port": "8085",
 							"path": [
 								"admin",
 								"user"
@@ -345,11 +519,10 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8085/admin/user",
+							"raw": "{{url}}/admin/user",
 							"host": [
-								"localhost"
+								"{{url}}"
 							],
-							"port": "8085",
 							"path": [
 								"admin",
 								"user"

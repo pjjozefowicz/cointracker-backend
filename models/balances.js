@@ -2,6 +2,7 @@ const Sequalize = require('sequelize')
 
 const sequalize = require('../utils/database')
 
+
 const Balance = sequalize.define('balances', {
     balance_id: {
         type: Sequalize.UUID,

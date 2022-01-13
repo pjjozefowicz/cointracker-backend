@@ -23,7 +23,7 @@ const Transaction = sequalize.define('transactions', {
         allowNull: false,
     },
     type: {
-        type: Sequalize.CHAR(8), //buy or sell or exchange, max 8 chars
+        type: Sequalize.STRING(8), //buy or sell or exchange, max 8 chars
         allowNull: false,
     },
     base_id: {
@@ -43,7 +43,7 @@ const Transaction = sequalize.define('transactions', {
         allowNull: false,
     },
     note: {
-        type: Sequalize.CHAR(256), //Users note about transaction
+        type: Sequalize.STRING(256), //Users note about transaction
         allowNull: false,
     },
     portfolio_id: {
