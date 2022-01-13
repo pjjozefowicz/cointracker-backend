@@ -19,6 +19,10 @@ const Portfolio = sequalize.define('portfolios', {
         type: Sequalize.UUID,
         allowNull: false,
     },
+    is_main: {
+        type: Sequalize.BOOLEAN,
+        allowNull: false,
+    },
 })
 
 Portfolio.hasMany(Transaction, {
