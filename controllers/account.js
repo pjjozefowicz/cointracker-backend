@@ -3,8 +3,9 @@ const Transaction = require("../models/transactions");
 const User = require("../models/users");
 const Balance = require("../models/balances");
 const { READCOMMITTED } = require("sequelize/dist/lib/table-hints");
-const { validationResult } = require('express-validator/check');
+const { validationResult } = require("express-validator/check");
 const Cryptocurrency = require("../models/cryptocurrencies");
+const sequalize = require('../utils/database')
 
 exports.getPortfolios = (req, res, next) => {
   Portfolio.findAll()
@@ -30,31 +31,33 @@ exports.createPortfolio = (req, res, next) => {
   const owner_id = req.body.owner_id;
   const is_main = req.body.is_main;
   const errors = validationResult(req);
-  if (errors.isEmpty()) { //Check for validation errors from routes folder
-  User.findByPk(owner_id) //Check if UUID exists in database
-  .then((owner) => {
-    if (owner === null){
-      return res.status(422).json({        
-        message: "Invalid UUID" //Should be "UUID not in our DATABASE", but I'm unifying messages"
+  if (errors.isEmpty()) {
+    //Check for validation errors from routes folder
+    User.findByPk(owner_id) //Check if UUID exists in database
+      .then((owner) => {
+        if (owner === null) {
+          return res.status(422).json({
+            message: "Invalid UUID", //Should be "UUID not in our DATABASE", but I'm unifying messages"
+          });
+        } else {
+          Portfolio.create({
+            name: name,
+            owner_id: owner_id,
+            is_main: is_main,
+          }).then((portfolio) =>
+            res.status(201).json({
+              message: "Portfolio created successfully!",
+              portfolio: portfolio,
+            })
+          );
+        }
       });
-    } else {
-      Portfolio.create({
-        name: name,
-        owner_id: owner_id,
-        is_main: is_main,
-      })
-        .then((portfolio) =>
-          res.status(201).json({
-            message: "Portfolio created successfully!",
-            portfolio: portfolio,
-          })
-        )
-    }
-  })} else {
+  } else {
     return res.status(422).json({
       message: "Invalid UUID",
     });
-}};
+  }
+};
 
 exports.deletePortfolio = (req, res, next) => {
   const portfolio_id = req.params.portfolio_id;
@@ -119,6 +122,22 @@ exports.getBalance = (req, res, next) => {
     .catch(res.status(500));
 };
 
+exports.getBalancesByPortfolioId = (req, res, next) => {
+  const portfolio_id = req.params.portfolio_id;
+  sequalize
+    .query(
+      `SELECT cryptocurrencies.name, cryptocurrencies.code, balances.amount FROM balances INNER JOIN cryptocurrencies ON balances.cryptocurrency_id = cryptocurrencies.cryptocurrency_id WHERE balances.portfolio_id = '${portfolio_id}'`, { type: sequalize.QueryTypes.SELECT }
+    )
+    .then((balances) => {
+      if (balances === null) {
+        return res.status(404);
+      } else {
+        return res.status(200).json(balances);
+      }
+    })
+    .catch(res.status(500));
+};
+
 exports.createBalance = (req, res, next) => {
   const amount = req.body.amount;
   const portfolio_id = req.body.portfolio_id;
@@ -129,35 +148,34 @@ exports.createBalance = (req, res, next) => {
       if (portfolio === null) {
         return res.status(422).json({
           message: "Invalid UUID",
-        })
+        });
       } else {
         Cryptocurrency.findByPk(currency_id).then((currency) => {
           if (currency === null) {
             return res.status(422).json({
               message: "Invalid UUID",
-            })
+            });
           } else {
             Balance.create({
               amount: amount,
               portfolio_id: portfolio_id,
               cryptocurrency_id: currency_id,
-            })
-              .then((balance) =>
-                res.status(201).json({
-                  message: "Balance created successfully!",
-                  balance: balance,
-                })
-              )
+            }).then((balance) =>
+              res.status(201).json({
+                message: "Balance created successfully!",
+                balance: balance,
+              })
+            );
           }
         });
       }
-    })
+    });
   } else {
     return res.status(422).json({
       message: "Invalid UUID",
-    })
+    });
   }
-}
+};
 
 exports.deleteBalance = (req, res, next) => {
   const balance_id = req.params.balance_id;
@@ -234,57 +252,58 @@ exports.createTransaction = (req, res, next) => {
   const note = req.body.note;
   const portfolio_id = req.body.portfolio_id;
   const errors = validationResult(req);
-  
+
   if (errors.isEmpty()) {
     Cryptocurrency.findByPk(base_id).then((base) => {
       if (base === null) {
         return res.status(422).json({
           message: "Invalid UUID",
-        })
+        });
       } else {
         Cryptocurrency.findByPk(quote_id).then((quote) => {
           if (quote === null) {
             return res.status(422).json({
               message: "Invalid UUID",
-            })
+            });
           } else {
             Portfolio.findByPk(portfolio_id).then((portfolio) => {
               if (portfolio === null) {
                 return res.status(422).json({
                   message: "Invalid UUID",
-                })
-              } else { 
-            Transaction.create({
-              rate: rate,
-              amount: amount,
-              total_spent: total_spent,
-              type: type,
-              base_id: base_id,
-              quote_id: quote_id,
-              date: date,
-              fee: fee,
-              note: note,
-              portfolio_id: portfolio_id,
-            })
-              .then((transaction) =>
-                res.status(201).json({
-                  message: "transaction created successfully!",
-                  transaction: transaction,
-                })
-              )}})}
+                });
+              } else {
+                Transaction.create({
+                  rate: rate,
+                  amount: amount,
+                  total_spent: total_spent,
+                  type: type,
+                  base_id: base_id,
+                  quote_id: quote_id,
+                  date: date,
+                  fee: fee,
+                  note: note,
+                  portfolio_id: portfolio_id,
+                }).then((transaction) =>
+                  res.status(201).json({
+                    message: "transaction created successfully!",
+                    transaction: transaction,
+                  })
+                );
+              }
+            });
           }
-        )
+        });
       }
-    })
+    });
   } else {
     return res.status(422).json({
       message: "Invalid Validation",
-    })
+    });
   }
 };
 
 exports.updateTransaction = (req, res, next) => {
-  const transaction_id = req.params.tx_id
+  const transaction_id = req.params.tx_id;
   const rate = req.body.rate;
   const amount = req.body.amount;
   const total_spent = req.body.total_spent;

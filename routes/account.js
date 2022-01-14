@@ -90,6 +90,9 @@ router.get('/balances', accountController.getBalances);
 // GET /account/balance/:balance_id
 router.get('/balance/:balance_id', accountController.getBalance);
 
+// GET /account/balances-by-portfolio/:portfolio_id
+router.get('/balances-by-portfolio/:portfolio_id', accountController.getBalancesByPortfolioId);
+
 // POST /account/balance
 router.post('/balance',[
     check('portfolio_id')
