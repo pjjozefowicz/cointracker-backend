@@ -12,7 +12,7 @@ router.get('/users', adminController.getUsers);
 router.post('/user',[
     check('auth0_id')
     .notEmpty()
-    .isString(),
+    .isDecimal(),
 ], adminController.createUser);
 
 // DELETE /admin/user

@@ -3,6 +3,7 @@ const Sequalize = require('sequelize')
 const sequalize = require('../utils/database')
 const Balance = require('./balances')
 const Transaction = require('./transactions')
+const Data = require('./historical_data')
 
 const Cryptocurrency = sequalize.define('cryptocurrencies', {
     cryptocurrency_id: {
@@ -42,6 +43,13 @@ Cryptocurrency.hasMany(Transaction, {
 Cryptocurrency.hasMany(Transaction, {
     foreignKey:{
         name: 'quote_id',
+        allowNull: false,
+    }
+})
+
+Cryptocurrency.hasMany(Data, {
+    foreignKey:{
+        name: 'coin_id',
         allowNull: false,
     }
 })

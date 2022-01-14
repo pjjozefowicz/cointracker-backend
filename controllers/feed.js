@@ -1,7 +1,11 @@
+const Data = require("../models/historical_data");
+
 exports.getPosts = (req, res, next) => {
-  res.status(200).json({
-    posts: [{ title: 'First Post', content: 'This is the first post!' }]
-  });
+    Data.findAll({
+        where: {
+            coin_name: 'bitcoin'
+      }}).then((coins) => res.status(200).json(coins))
+        .catch(res.status(500))
 };
 
 exports.createPost = (req, res, next) => {
