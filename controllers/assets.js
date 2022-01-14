@@ -1,7 +1,8 @@
 const Sequalize = require('sequelize')
 const Crypto = require("../models/cryptocurrencies");
 const Data = require("../models/historical_data");
-const { validationResult } = require('express-validator/check')
+const { validationResult } = require('express-validator/check');
+const Change = require('../models/price_changes');
 
 exports.getCoins = (req, res, next) => {
   Crypto.findAll()
@@ -9,6 +10,20 @@ exports.getCoins = (req, res, next) => {
     .then((coins) => res.status(200).json(coins))
     .catch(res.status(500));
 };
+
+exports.getCoininfo = (req, res, next) => {
+    const coins = req.body.coins;
+    Change.findAll({
+      attributes: ['coin_name','pln','market_cap','pln_1h','pln_1d','pln_7d'],
+      where: {
+        coin_name: coins,
+      },
+    })
+    .then((coins) => res.status(200).json(coins))
+    .catch(res.status(500));
+};
+
+
 
 exports.getHistory = (req, res, next) => {
   const coins = req.body.coins;

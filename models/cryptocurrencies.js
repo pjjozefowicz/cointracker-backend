@@ -4,6 +4,7 @@ const sequalize = require('../utils/database')
 const Balance = require('./balances')
 const Transaction = require('./transactions')
 const Data = require('./historical_data')
+const Change = require('./price_changes')
 
 const Cryptocurrency = sequalize.define('cryptocurrencies', {
     cryptocurrency_id: {
@@ -53,5 +54,7 @@ Cryptocurrency.hasMany(Data, {
         allowNull: false,
     }
 })
+
+
 
 module.exports = Cryptocurrency
