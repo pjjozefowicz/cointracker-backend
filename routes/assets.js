@@ -8,8 +8,12 @@ const { check } = require('express-validator/check');
 // GET /assets/coins
 router.get('/coins', assetsController.getCoins);
 
+// GET /assets/coins
+router.get('/history/', assetsController.getHistory);
+
+
 // GET /assets/coin/:coin_id
-router.get('/coin/:coin_id', assetsController.getCoin);
+router.get('/coin/', assetsController.getCoin);
 
 // POST /assets/coin
 router.post('/coin',[
