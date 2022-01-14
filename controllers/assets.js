@@ -1,12 +1,51 @@
+const Sequalize = require('sequelize')
 const Crypto = require("../models/cryptocurrencies");
+const Data = require("../models/historical_data");
 const { validationResult } = require('express-validator/check')
 
 exports.getCoins = (req, res, next) => {
   Crypto.findAll()
+
     .then((coins) => res.status(200).json(coins))
     .catch(res.status(500));
 };
 
+exports.getHistory = (req, res, next) => {
+  const coins = req.body.coins;
+  Data.findAll({
+    attributes: ['coin_name','timestamp','price'],
+    where: {
+      coin_name: coins,
+    },
+
+  })
+    .then((values) => { 
+      var dataArray = {}
+      var price = {}
+      var dataArray2 = []
+      price["price"] = []
+      price["timestamp"] = []
+      
+      for (var c = 0; c < coins.length;c++) {
+        counter = 0 
+      values.forEach((i) => {
+        
+        dataArray[coins[c]] = dataArray2        
+         if (i.coin_name == coins[c]){
+           counter = counter + 1      
+           if (counter % 4 === 0 && counter % 3 === 0 ) {
+           price["price"] = i.price
+           price["timestamp"] = i.timestamp
+           dataArray2.push(price) 
+           console.log(counter)         
+          }       
+      }
+         })
+      }
+    res.status(200).json(dataArray)
+  })
+    .catch(res.status(500));
+};
 exports.getCoin = (req, res, next) => {
   const coin_id = req.params.coin_id;
   Crypto.findByPk(coin_id)
@@ -92,6 +131,3 @@ exports.updateCoin = (req, res, next) => {
     })
     .catch(res.status(500));
 };
-
-
-

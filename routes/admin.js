@@ -10,9 +10,9 @@ router.get('/users', adminController.getUsers);
 
 // POST /admin/user
 router.post('/user',[
-    check('auth0.id')
+    check('auth0_id')
     .notEmpty()
-    .isString(),
+    .isDecimal(),
 ], adminController.createUser);
 
 // DELETE /admin/user

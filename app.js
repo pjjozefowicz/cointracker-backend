@@ -6,15 +6,12 @@ const Cryptocurrency = require('./models/cryptocurrencies')
 const Portfolio = require('./models/portfolios')
 const Transaction = require('./models/transactions')
 const User = require('./models/users')
-
+const Data = require('./models/historical_data')
 const feedRoutes = require('./routes/feed');
 const accountRoutes = require('./routes/account')
 const assetsRoutes = require('./routes/assets')
 const adminRoutes = require('./routes/admin')
-
-
 const app = express();
-
 
 // app.use(bodyParser.urlencoded()); // x-www-form-urlencoded <form>
 app.use(bodyParser.json()); // application/json
@@ -33,7 +30,7 @@ app.use('/admin', adminRoutes);
 app.use('/assets', assetsRoutes);
 // app.use('/')
 
-// sequalize.drop() 
+//sequalize.drop() 
 //sequalize.sync() // Need to declare const XXXX = require('./models/...') to work
 sequalize.sync()
 .then(result => {
@@ -45,3 +42,95 @@ sequalize.sync()
     console.log(err)
 })
 // app.listen(8085)
+
+
+function wait(milleseconds) {
+    return new Promise(resolve => setTimeout(resolve, milleseconds))
+  }
+
+var funcImportCoinsFromCoingecko = async() => {
+    coinsNumber = 10 //DECLARE VALUE OF COINS 1..250 WHEN > 100 THEN CHANGE PAGES DOWN BELOW
+    tableSize = await Cryptocurrency.count()
+    
+    if (tableSize < coinsNumber) {
+    let data = await CoinGeckoClient.coins.markets({
+        vs_currency: 'pln',
+        order: 'market_cap_desc',
+        per_page: coinsNumber, 
+        page: '1'    // MAX 100 PER PAGE
+    });
+    data.data.forEach((i) =>{
+        coingecko_id = i.id
+        code = i.symbol  
+    Cryptocurrency.create({
+        name: i.name,
+        code: i.symbol,
+        coingecko_id: i.id,
+      })
+        .then((coin) =>
+        console.log("Coin created successfully!"),
+        )
+    })
+} else {
+    console.log("TABLE REACHED MINIMAL COINS NUMBER")
+}}
+
+//1. Import coingecko-api
+const CoinGecko = require('coingecko-api');
+const { SequelizeScopeError } = require('sequelize/dist');
+
+//2. Initiate the CoinGecko API Client
+const CoinGeckoClient = new CoinGecko();
+
+//3. Make calls
+var func = async() => {
+    namesTable = []
+    coinidsTable = []
+    names = await Cryptocurrency.findAll()
+    names.forEach((i) => {
+        namesTable.push(i.coingecko_id)
+        coinidsTable.push(i.cryptocurrency_id)        
+    })
+    console.log(coinidsTable)
+    for (var i = 0; i < namesTable.length; i++) {
+    await wait(1000)
+    coin_id = coinidsTable[i]
+    coin_name = namesTable[i]
+    
+    coin = await Cryptocurrency.findByPk(coin_id)
+    let data = await CoinGeckoClient.coins.fetchMarketChart(namesTable[i], {
+        vs_currency: 'pln',
+        days: '7',
+        interval: 'hourly'
+    })
+    data.data.prices.forEach((i) =>{
+        timestamp = i[0]
+        price = i[1]
+        Data.create({
+            coin_name: coin_name,
+            coin_id: coin_id,
+            timestamp: timestamp,
+            price: price,
+          })
+            .then(() =>
+            console.log("historical data fetched")
+            )  
+    })
+    }
+};
+
+//
+//
+//
+// first start project then uncomment those 2 functions
+//funcImportCoinsFromCoingecko() //IMPORTING COINS FROM COINGECKO
+//func()
+//
+//
+//
+//
+//
+//
+//
+//
+
