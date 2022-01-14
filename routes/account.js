@@ -62,10 +62,11 @@ router.get('/portfolios', accountController.getPortfolios);
 // GET /account/portfolio/:portfolio_id
 router.get('/portfolio/:portfolio_id', accountController.getPortfolio);
 
+router.get('/portfolios-by-owner/:owner_id', accountController.getPortfoliosByUserId);
+
 // POST /account/portfolio
 router.post('/portfolio',[
     check('owner_id')
-    .isUUID()
     .exists(),
     check('name')
     .isString()

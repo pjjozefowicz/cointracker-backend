@@ -17,7 +17,7 @@ const Portfolio = sequalize.define('portfolios', {
         allowNull: false,
     },
     owner_id: {
-        type: Sequalize.UUID,
+        type: Sequalize.STRING(32),
         allowNull: false,
     },
     is_main: {
