@@ -7,10 +7,12 @@ const Portfolio = require('./models/portfolios')
 const Transaction = require('./models/transactions')
 const User = require('./models/users')
 const Data = require('./models/historical_data')
+const Change = require('./models/price_changes')
 const feedRoutes = require('./routes/feed');
 const accountRoutes = require('./routes/account')
 const assetsRoutes = require('./routes/assets')
 const adminRoutes = require('./routes/admin')
+const { Op } = require('sequelize');
 const app = express();
 
 // app.use(bodyParser.urlencoded()); // x-www-form-urlencoded <form>
@@ -57,7 +59,8 @@ var funcImportCoinsFromCoingecko = async() => {
         vs_currency: 'pln',
         order: 'market_cap_desc',
         per_page: coinsNumber, 
-        page: '1'    // MAX 100 PER PAGE
+        page: '1',    // MAX 100 PER PAGE
+        //price_change_percentage: ["1h","24h","7d"]
     });
     data.data.forEach((i) =>{
         coingecko_id = i.id
@@ -134,3 +137,42 @@ var func = async() => {
 //
 //
 
+
+var frontend7d = async () => {
+    Change.sync({ force: true });
+    namesTable = []
+    coinidsTable = []
+    names = await Cryptocurrency.findAll()
+    names.forEach((i) => {
+        namesTable.push(i.coingecko_id)
+        coinidsTable.push(i.cryptocurrency_id)
+    })
+    let data = await CoinGeckoClient.coins.markets({
+        ids: namesTable,
+        vs_currency: 'pln',
+        order: 'market_cap_desc',
+        per_page: '10', 
+        page: '1',    // MAX 100 PER PAGE
+        price_change_percentage: '1h,24h,7d'
+        });
+        
+    data.data.forEach((i) => {
+        console.log(i.name, i.current_price, i.market_cap, 
+            i.price_change_percentage_1h_in_currency, i.price_change_percentage_24h_in_currency,
+            i.price_change_percentage_7d_in_currency )
+            Change.create({
+                coin_name: i.id,
+                pln: i.current_price,
+                market_cap: i.market_cap,
+                pln_1h: i.price_change_percentage_1h_in_currency,
+                pln_1d: i.price_change_percentage_24h_in_currency,
+                pln_7d: i.price_change_percentage_7d_in_currency
+              })
+                .then(() =>
+                console.log("historical data fetched")
+                )  
+            }
+    )
+    
+};
+frontend7d()
