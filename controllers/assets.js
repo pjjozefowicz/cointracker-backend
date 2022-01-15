@@ -12,26 +12,19 @@ exports.getCoins = (req, res, next) => {
 };
 
 exports.getCoininfo = (req, res, next) => {
-  const coins = req.body.coins;
-  Change.findAll({
-    attributes: [
-      "coin_name",
-      "pln",
-      "market_cap",
-      "pln_1h",
-      "pln_1d",
-      "pln_7d",
-    ],
-    where: {
-      coin_name: coins,
-    },
-  })
+    const coins = req.query.coins.split(',');
+    Change.findAll({
+      attributes: ['coin_name','pln','market_cap','pln_1h','pln_1d','pln_7d'],
+      where: {
+        coin_name: coins,
+      },
+    })
     .then((coins) => res.status(200).json(coins))
     .catch(res.status(500));
 };
 
 exports.getHistory = (req, res, next) => {
-  const coins = req.body.coins;
+  const coins = req.query.coins.split(',');
   Data.findAll({
     attributes: ["coin_name", "timestamp", "price"],
     where: {
