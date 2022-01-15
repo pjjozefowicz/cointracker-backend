@@ -51,6 +51,7 @@ function wait(milleseconds) {
   }
 
 var funcImportCoinsFromCoingecko = async() => {
+    await wait(1000)
     coinsNumber = 10 //DECLARE VALUE OF COINS 1..250 WHEN > 100 THEN CHANGE PAGES DOWN BELOW
     tableSize = await Cryptocurrency.count()
     
@@ -87,6 +88,7 @@ const CoinGeckoClient = new CoinGecko();
 
 //3. Make calls
 var func = async() => {
+    await wait(2000)
     namesTable = []
     coinidsTable = []
     names = await Cryptocurrency.findAll()
@@ -126,8 +128,7 @@ var func = async() => {
 //
 //
 // first start project then uncomment those 2 functions
-//funcImportCoinsFromCoingecko() //IMPORTING COINS FROM COINGECKO
-//func()
+
 //
 //
 //
@@ -139,6 +140,7 @@ var func = async() => {
 
 
 var frontend7d = async () => {
+    await wait(3000)
     Change.sync({ force: true });
     namesTable = []
     coinidsTable = []
@@ -175,4 +177,9 @@ var frontend7d = async () => {
     )
     
 };
+//wait(1000)
+//funcImportCoinsFromCoingecko() //IMPORTING COINS FROM COINGECKO
+//wait(1000)
+//func()
+//wait(1000)
 frontend7d()

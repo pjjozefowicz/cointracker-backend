@@ -6,7 +6,7 @@ const router = express.Router();
 const { check } = require('express-validator/check');
 
 // GET /assets/coins
-router.get('/coins', assetsController.getCoins);
+router.get('/coins/', assetsController.getCoins);
 
 // GET /assets/history
 router.get('/history/', assetsController.getHistory);
