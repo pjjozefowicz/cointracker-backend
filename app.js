@@ -127,7 +127,7 @@ var func = async() => {
 //
 // first start project then uncomment those 2 functions
 //funcImportCoinsFromCoingecko() //IMPORTING COINS FROM COINGECKO
-//func()
+// func()
 //
 //
 //
