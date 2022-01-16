@@ -41,9 +41,25 @@ sequalize.sync()
     app.listen(8085);
 })
 .catch(err => {
-    console.log(err)
+    console.log(err) 
 })
-// app.listen(8085)
+
+const coinsNumber = 10 //DECLARE VALUE OF COINS 1..250 WHEN > 100 THEN CHANGE PAGES DOWN BELOW
+
+
+
+function CountRequests() {
+    ImportCoinsRequests = 1, 
+    HistoricalRequests = coinsNumber, 
+    CoinStatsRequests = 1
+    request = ImportCoinsRequests + HistoricalRequests + CoinStatsRequests
+    requests = ~~(request/45) * 60000
+    
+    return requests
+  }
+
+delay = CountRequests()
+
 
 
 function wait(milleseconds) {
@@ -51,11 +67,11 @@ function wait(milleseconds) {
   }
 
 var funcImportCoinsFromCoingecko = async() => {
-    await wait(1000)
-    coinsNumber = 10 //DECLARE VALUE OF COINS 1..250 WHEN > 100 THEN CHANGE PAGES DOWN BELOW
+    await wait(delay + 1000)    
     tableSize = await Cryptocurrency.count()
     
     if (tableSize < coinsNumber) {
+    Cryptocurrency.sync({ force: true });
     let data = await CoinGeckoClient.coins.markets({
         vs_currency: 'pln',
         order: 'market_cap_desc',
@@ -87,60 +103,61 @@ const { SequelizeScopeError } = require('sequelize/dist');
 const CoinGeckoClient = new CoinGecko();
 
 //3. Make calls
-var func = async() => {
-    await wait(2000)
-    namesTable = []
-    coinidsTable = []
-    names = await Cryptocurrency.findAll()
-    names.forEach((i) => {
-        namesTable.push(i.coingecko_id)
-        coinidsTable.push(i.cryptocurrency_id)        
-    })
-    console.log(coinidsTable)
-    for (var i = 0; i < namesTable.length; i++) {
-    await wait(1000)
-    coin_id = coinidsTable[i]
-    coin_name = namesTable[i]
-    
-    coin = await Cryptocurrency.findByPk(coin_id)
-    let data = await CoinGeckoClient.coins.fetchMarketChart(namesTable[i], {
-        vs_currency: 'pln',
-        days: '7',
-        interval: 'hourly'
-    })
-    data.data.prices.forEach((i) =>{
-        timestamp = i[0]
-        price = i[1]
-        Data.create({
-            coin_name: coin_name,
-            coin_id: coin_id,
-            timestamp: timestamp,
-            price: price,
-          })
-            .then(() =>
-            console.log("historical data fetched")
-            )  
-    })
+var funcImportHistoricalData = async() => {
+    await wait(delay + 2000)
+    var time1hour = Date.now() - 3600000;
+    lastRowTime = await Data.findAll({
+        limit: 1,
+        attributes: ['createdAt'],
+        order: [ [ 'timestamp', 'DESC' ]]
+      }).then(function(entries){
+        return entries[0].dataValues.createdAt
+      }); 
+    if (time1hour > lastRowTime) {
+        Data.sync({ force: true });
+        console.log("REFRESH")
+        namesTable = []
+        coinidsTable = []
+        names = await Cryptocurrency.findAll()
+        names.forEach((i) => {
+            namesTable.push(i.coingecko_id)
+            coinidsTable.push(i.cryptocurrency_id)        
+        })
+        console.log(coinidsTable)
+        for (var i = 0; i < namesTable.length; i++) {
+        await wait(1000)
+        coin_id = coinidsTable[i]
+        coin_name = namesTable[i]
+        
+        coin = await Cryptocurrency.findByPk(coin_id)
+        let data = await CoinGeckoClient.coins.fetchMarketChart(namesTable[i], {
+            vs_currency: 'pln',
+            days: '7',
+            interval: 'hourly'
+        })
+        data.data.prices.forEach((i) =>{
+            timestamp = i[0]
+            price = i[1]
+            Data.create({
+                coin_name: coin_name,
+                coin_id: coin_id,
+                timestamp: timestamp,
+                price: price,
+              })
+                .then(() =>
+                console.log("historical data fetched")
+                )  
+        })
+        }
+    } else {
+        console.log("NIE REFRESH")
     }
+
+
 };
 
-//
-//
-//
-// first start project then uncomment those 2 functions
-
-//
-//
-//
-//
-//
-//
-//
-//
-
-
-var frontend7d = async () => {
-    await wait(3000)
+var funcImportCoinStats = async () => {
+    await wait(delay + 3000)
     Change.sync({ force: true });
     namesTable = []
     coinidsTable = []
@@ -177,9 +194,8 @@ var frontend7d = async () => {
     )
     
 };
-//wait(1000)
-//funcImportCoinsFromCoingecko() //IMPORTING COINS FROM COINGECKO
-//wait(1000)
-//func()
-//wait(1000)
-frontend7d()
+
+funcImportCoinsFromCoingecko()
+funcImportHistoricalData()
+setInterval(function() {funcImportCoinStats()}, delay+60000)
+setInterval(function() {funcImportHistoricalData()}, delay+3720000)

@@ -41,12 +41,12 @@ Cryptocurrency.hasMany(Transaction, {
     }
 })
 
-Cryptocurrency.hasMany(Transaction, {
-    foreignKey:{
-        name: 'quote_id',
-        allowNull: false,
-    }
-})
+// Cryptocurrency.hasMany(Transaction, {
+//     foreignKey:{
+//         name: 'quote_id',
+//         allowNull: false,
+//     }
+// })
 
 Cryptocurrency.hasMany(Data, {
     foreignKey:{
