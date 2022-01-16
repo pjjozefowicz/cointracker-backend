@@ -22,6 +22,10 @@ const Change = sequalize.define('change', {
         type: Sequalize.DECIMAL(),
         allowNull: true,
     },
+    image_url: {
+        type: Sequalize.STRING(),
+        allowNull: true,
+    },
     pln_1h: {
         type: Sequalize.DECIMAL(),
         allowNull: true,

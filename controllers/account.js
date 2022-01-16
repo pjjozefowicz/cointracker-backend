@@ -198,6 +198,7 @@ exports.createBalance = (req, res, next) => {
               amount: amount,
               portfolio_id: portfolio_id,
               cryptocurrency_id: currency_id,
+              cost: 0,
             }).then((balance) =>
               res.status(201).json({
                 message: "Balance created successfully!",
@@ -317,12 +318,12 @@ exports.createTransaction = (req, res, next) => {
           message: "Invalid UUID",
         });
       } else {
-        Cryptocurrency.findByPk(quote_id).then((quote) => {
-          if (quote === null) {
-            return res.status(422).json({
-              message: "Invalid UUID",
-            });
-          } else {
+      //  Cryptocurrency.findByPk(quote_id).then((quote) => {
+      //     if (quote === null) {
+      //       return res.status(422).json({
+      //         message: "Invalid UUID",
+      //       });
+      //     } else {
             Portfolio.findByPk(portfolio_id).then((portfolio) => {
               if (portfolio === null) {
                 return res.status(422).json({
@@ -340,16 +341,35 @@ exports.createTransaction = (req, res, next) => {
                   fee: fee,
                   note: note,
                   portfolio_id: portfolio_id,
-                }).then((transaction) =>
+                }).then((transaction) =>{
+                  if (type = "sell"){
+                    amount =  Number(amount) * Number(-1)
+                  }
+                  Balance.findAll({
+                    limit: 1,
+                    where: {
+                      portfolio_id: transaction.portfolio_id
+                    },
+                    attributes: ['cost','amount'],
+                  }).then(function(entries){
+                    Balance.update({
+                      amount: Number(entries[0].dataValues.amount)+(Number(transaction.amount)*Number(transaction.rate)),
+                      cost: Number(entries[0].dataValues.cost)+(Number(transaction.amount)*Number(transaction.rate))},
+                      {where: {
+                        portfolio_id: transaction.portfolio_id
+                      },
+                    })          
+                  }); 
                   res.status(201).json({
                     message: "transaction created successfully!",
-                    transaction: transaction,
+                    transaction: transaction,                  
                   })
+                }
                 );
               }
             });
-          }
-        });
+ //         }
+ //       });
       }
     });
   } else {
@@ -371,6 +391,23 @@ exports.updateTransaction = (req, res, next) => {
   const fee = req.body.fee;
   const note = req.body.note;
   const portfolio_id = req.body.portfolio_id;
+  Transaction.findAll({
+    limit: 1,
+    where: {
+      transaction_id: transaction_id
+    },
+    attributes: ['amount','rate'],
+  }).then(function(entries){
+    Balance.update({
+      cost: Math.abs(
+        (Number(entries[0].dataValues.amount)*Number(entries[0].dataValues.rate)) 
+        - (Number(rate)*Number(amount)))},
+      {where: {
+        portfolio_id: portfolio_id        
+      },
+    })          
+  });
+
   Transaction.update(
     {
       rate: rate,
@@ -388,10 +425,8 @@ exports.updateTransaction = (req, res, next) => {
       where: {
         transaction_id: transaction_id,
       },
-    }
-  )
-    .then((count) => {
-      if (count > 0) {
+    }).then((transaction) => {
+      if (transaction > 0) {
         return res.status(200).json({ message: "transaction updated" });
       } else {
         return res.status(404).json({ message: "There's no such transaction" });

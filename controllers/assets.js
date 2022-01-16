@@ -6,7 +6,6 @@ const Change = require("../models/price_changes");
 
 exports.getCoins = (req, res, next) => {
   Crypto.findAll()
-
     .then((coins) => res.status(200).json(coins))
     .catch(res.status(500));
 };
@@ -14,7 +13,7 @@ exports.getCoins = (req, res, next) => {
 exports.getCoininfo = (req, res, next) => {
     const coins = req.query.coins.split(',');
     Change.findAll({
-      attributes: ['coin_name','pln','market_cap','pln_1h','pln_1d','pln_7d'],
+      attributes: ['coin_name','pln','market_cap','pln_1h','pln_1d','pln_7d','image_url'],
       where: {
         coin_name: coins,
       },
@@ -31,27 +30,29 @@ exports.getHistory = (req, res, next) => {
       coin_name: coins,
     },
   })
-    .then((values) => {
-      var dataArray = {};
-      var price = {};
-      var dataArray2 = [];
-      price["price"] = [];
-      price["timestamp"] = [];
 
-      for (var c = 0; c < coins.length; c++) {
-        counter = 0;
-        values.forEach((i) => {
-          dataArray[coins[c]] = dataArray2;
-          if (i.coin_name == coins[c]) {
-            counter = counter + 1;
-            if (counter % 4 === 0 && counter % 3 === 0) {
-              price["price"] = i.price;
-              price["timestamp"] = i.timestamp;
-              dataArray2.push(price);
-              console.log(counter);
-            }
-          }
-        });
+    .then((values) => { 
+      var dataArray = {}
+      var price = {}
+      var dataArray2 = []
+      price["price"] = []
+      price["timestamp"] = []
+      
+      for (var c = 0; c < coins.length;c++) {
+      counter = 0         
+      values.forEach((i) => {                
+         if (i.coin_name == coins[c]){
+           counter = counter + 1      
+           if (counter % 4 === 0 && counter % 3 === 0 ) {
+            price["price"] = i.price
+            price["timestamp"] = i.timestamp
+            dataArray2.push(JSON.parse(JSON.stringify(price)))
+            console.log(price)  
+            console.log(dataArray2) 
+          } 
+      }
+         })
+         dataArray[coins[c]] = dataArray2 
       }
       res.status(200).json(dataArray);
     })

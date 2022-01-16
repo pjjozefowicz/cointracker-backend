@@ -18,7 +18,7 @@ const Portfolio = sequalize.define('portfolios', {
     },
     owner_id: {
         type: Sequalize.STRING(32),
-        allowNull: false,
+        allowNull: true, // PAMIETAC ZEBY ZMIENIC NA FALSE
     },
     is_main: {
         type: Sequalize.BOOLEAN,

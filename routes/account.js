@@ -35,10 +35,10 @@ router.post('/transaction',[
     .isUUID()
     .exists()
     .bail(),
-    check('quote_id')
-    .isUUID()
-    .exists()
-    .bail(),
+    // check('quote_id')
+    // .isUUID()
+    // .exists()
+    // .bail(),
     check('date')
     .isDate()
     .notEmpty(),
@@ -47,7 +47,7 @@ router.post('/transaction',[
     .notEmpty(),
     check('note')
     .isString()
-    .isLength({ max:5 }),
+    .isLength({ max:35 }),
     check('portfolio_id')
     .isUUID()
     .exists(),
@@ -69,8 +69,8 @@ router.get('/portfolios-by-owner/:owner_id', accountController.getPortfoliosByUs
 
 // POST /account/portfolio
 router.post('/portfolio',[
-    check('owner_id')
-    .exists(),
+    //check('owner_id') PAMIETAC ZEBY ODKOMENTOWAC JAK BEDZIE AUTH0
+    //.exists(),  PAMIETAC ZEBY ODKOMENTOWAC JAK BEDZIE AUTH0
     check('name')
     .isString()
     .exists()
