@@ -1,8 +1,8 @@
-const Sequalize = require('sequelize')
+const Sequalize = require("sequelize");
 const Crypto = require("../models/cryptocurrencies");
 const Data = require("../models/historical_data");
-const { validationResult } = require('express-validator/check');
-const Change = require('../models/price_changes');
+const { validationResult } = require("express-validator/check");
+const Change = require("../models/price_changes");
 
 exports.getCoins = (req, res, next) => {
   Crypto.findAll()
@@ -22,17 +22,15 @@ exports.getCoininfo = (req, res, next) => {
     .catch(res.status(500));
 };
 
-
-
 exports.getHistory = (req, res, next) => {
   const coins = req.query.coins.split(',');
   Data.findAll({
-    attributes: ['coin_name','timestamp','price'],
+    attributes: ["coin_name", "timestamp", "price"],
     where: {
       coin_name: coins,
     },
-
   })
+
     .then((values) => { 
       var dataArray = {}
       var price = {}
@@ -56,8 +54,8 @@ exports.getHistory = (req, res, next) => {
          })
          dataArray[coins[c]] = dataArray2 
       }
-    res.status(200).json(dataArray)
-  })
+      res.status(200).json(dataArray);
+    })
     .catch(res.status(500));
 };
 exports.getCoin = (req, res, next) => {
@@ -79,22 +77,22 @@ exports.createCoin = (req, res, next) => {
   const coingecko_id = req.body.coingecko_id;
   const errors = validationResult(req);
   if (errors.isEmpty()) {
-  Crypto.create({
-    name: name,
-    code: code,
-    coingecko_id: coingecko_id,
-  })
-    .then((coin) =>
-      res.status(201).json({
-        message: "Coin created successfully!",
-        coin: coin,
-      })
-    )
-    .catch(res.status(500));
+    Crypto.create({
+      name: name,
+      code: code,
+      coingecko_id: coingecko_id,
+    })
+      .then((coin) =>
+        res.status(201).json({
+          message: "Coin created successfully!",
+          coin: coin,
+        })
+      )
+      .catch(res.status(500));
   } else {
-      res.status(422).json({
+    res.status(422).json({
       message: "Invalid values, coin not created",
-      })
+    });
   }
 };
 

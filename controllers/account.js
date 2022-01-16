@@ -162,7 +162,7 @@ exports.getBalancesByPortfolioId = (req, res, next) => {
   const portfolio_id = req.params.portfolio_id;
   sequalize
     .query(
-      `SELECT cryptocurrencies.name, cryptocurrencies.code, balances.amount FROM balances INNER JOIN cryptocurrencies ON balances.cryptocurrency_id = cryptocurrencies.cryptocurrency_id WHERE balances.portfolio_id = '${portfolio_id}'`,
+      `SELECT cryptocurrencies.coingecko_id, cryptocurrencies.name, cryptocurrencies.code, balances.amount FROM balances INNER JOIN cryptocurrencies ON balances.cryptocurrency_id = cryptocurrencies.cryptocurrency_id WHERE balances.portfolio_id = '${portfolio_id}'`,
       { type: sequalize.QueryTypes.SELECT }
     )
     .then((balances) => {
