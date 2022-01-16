@@ -13,7 +13,7 @@ exports.getCoins = (req, res, next) => {
 exports.getCoininfo = (req, res, next) => {
     const coins = req.query.coins.split(',');
     Change.findAll({
-      attributes: ['coin_name','pln','market_cap','pln_1h','pln_1d','pln_7d'],
+      attributes: ['coin_name','pln','market_cap','pln_1h','pln_1d','pln_7d','image_url'],
       where: {
         coin_name: coins,
       },

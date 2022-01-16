@@ -178,11 +178,12 @@ var funcImportCoinStats = async () => {
     data.data.forEach((i) => {
         console.log(i.name, i.current_price, i.market_cap, 
             i.price_change_percentage_1h_in_currency, i.price_change_percentage_24h_in_currency,
-            i.price_change_percentage_7d_in_currency )
+            i.price_change_percentage_7d_in_currency, i.image )
             Change.create({
                 coin_name: i.id,
                 pln: i.current_price,
                 market_cap: i.market_cap,
+                image_url: i.image,
                 pln_1h: i.price_change_percentage_1h_in_currency,
                 pln_1d: i.price_change_percentage_24h_in_currency,
                 pln_7d: i.price_change_percentage_7d_in_currency
