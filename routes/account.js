@@ -14,6 +14,9 @@ router.get('/transactions', accountController.getTransactions);
 // GET /account/transaction/:tx_id
 router.get('/transaction/:tx_id', accountController.getTransaction);
 
+// GET /account/transaction/:tx_id
+router.get('/transactions-by-portfolio/:portfolio_id/:cryptocurrency_id', accountController.getTransactionsByPortfolio);
+
 // POST /account/transaction
 router.post('/transaction',[
     check('rate')

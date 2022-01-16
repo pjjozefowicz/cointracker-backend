@@ -6,6 +6,7 @@ const { READCOMMITTED } = require("sequelize/dist/lib/table-hints");
 const { validationResult } = require("express-validator/check");
 const Cryptocurrency = require("../models/cryptocurrencies");
 const sequalize = require("../utils/database");
+const { port } = require("pg/lib/defaults");
 
 exports.getPortfolios = (req, res, next) => {
   Portfolio.findAll()
@@ -162,7 +163,7 @@ exports.getBalancesByPortfolioId = (req, res, next) => {
   const portfolio_id = req.params.portfolio_id;
   sequalize
     .query(
-      `SELECT cryptocurrencies.coingecko_id, cryptocurrencies.name, cryptocurrencies.code, balances.amount FROM balances INNER JOIN cryptocurrencies ON balances.cryptocurrency_id = cryptocurrencies.cryptocurrency_id WHERE balances.portfolio_id = '${portfolio_id}'`,
+      `SELECT cryptocurrencies.cryptocurrency_id, cryptocurrencies.coingecko_id, cryptocurrencies.name, cryptocurrencies.code, balances.amount FROM balances INNER JOIN cryptocurrencies ON balances.cryptocurrency_id = cryptocurrencies.cryptocurrency_id WHERE balances.portfolio_id = '${portfolio_id}'`,
       { type: sequalize.QueryTypes.SELECT }
     )
     .then((balances) => {
@@ -272,6 +273,25 @@ exports.getTransaction = (req, res, next) => {
         return res.status(404);
       } else {
         return res.status(200).json(transaction);
+      }
+    })
+    .catch(res.status(500));
+};
+
+exports.getTransactionsByPortfolio = (req, res, next) => {
+  const portfolio_id = req.params.portfolio_id;
+  const crypto_id = req.params.cryptocurrency_id;
+  Transaction.findAll({
+    where: {
+      portfolio_id: portfolio_id,
+      base_id: crypto_id
+    },
+  })
+    .then((transactions) => {
+      if (transactions === null) {
+        return res.status(404);
+      } else {
+        return res.status(200).json(transactions);
       }
     })
     .catch(res.status(500));
