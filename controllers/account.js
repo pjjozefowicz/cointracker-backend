@@ -330,10 +330,11 @@ exports.createTransaction = (req, res, next) => {
                   message: "Invalid UUID",
                 });
               } else {
+                total_spent_calc = Number(rate) * Number(amount) 
                 Transaction.create({
                   rate: rate,
                   amount: amount,
-                  total_spent: total_spent,
+                  total_spent: total_spent_calc,
                   type: type,
                   base_id: base_id,
                   quote_id: quote_id,
@@ -342,8 +343,11 @@ exports.createTransaction = (req, res, next) => {
                   note: note,
                   portfolio_id: portfolio_id,
                 }).then((transaction) =>{
-                  if (type = "sell"){
-                    amount =  Number(amount) * Number(-1)
+                  if (type == "Sell"){
+                    amount_calc = Number(amount) * Number(-1)
+                    total_spent_calc = Number(total_spent_calc) * Number(-1)
+                  } else {
+                    amount_calc = Number(amount)
                   }
                   Balance.findAll({
                     limit: 1,
@@ -353,8 +357,8 @@ exports.createTransaction = (req, res, next) => {
                     attributes: ['cost','amount'],
                   }).then(function(entries){
                     Balance.update({
-                      amount: Number(entries[0].dataValues.amount)+(Number(transaction.amount)*Number(transaction.rate)),
-                      cost: Number(entries[0].dataValues.cost)+(Number(transaction.amount)*Number(transaction.rate))},
+                      amount: Number(entries[0].dataValues.amount)+amount_calc,
+                      cost: Number(entries[0].dataValues.cost)+total_spent_calc},
                       {where: {
                         portfolio_id: transaction.portfolio_id
                       },
@@ -391,28 +395,29 @@ exports.updateTransaction = (req, res, next) => {
   const fee = req.body.fee;
   const note = req.body.note;
   const portfolio_id = req.body.portfolio_id;
+  total_spent_calc = Number(rate) * Number(amount)
   Transaction.findAll({
     limit: 1,
     where: {
       transaction_id: transaction_id
     },
-    attributes: ['amount','rate'],
+    attributes: ['amount','total_spent','portfolio_id','base_id','type'],
   }).then(function(entries){
-    Balance.update({
-      cost: Math.abs(
-        (Number(entries[0].dataValues.amount)*Number(entries[0].dataValues.rate)) 
-        - (Number(rate)*Number(amount)))},
-      {where: {
-        portfolio_id: portfolio_id        
-      },
-    })          
-  });
-
+    if (entries[0].type == type){
+      if (type == "Buy"){
+      Balance.increment( {amount: (Number(amount)-entries[0].amount), cost: (Number(total_spent_calc)-entries[0].total_spent)},
+      {where: {cryptocurrency_id: entries[0].base_id, portfolio_id: entries[0].portfolio_id}});}
+      if (type == "Sell"){
+      Balance.decrement( {amount: (Number(amount)-entries[0].amount), cost: (Number(total_spent_calc)-entries[0].total_spent)},
+      {where: {cryptocurrency_id: entries[0].base_id, portfolio_id: entries[0].portfolio_id}});}
+      }    
+    })
+  console.log("rate:", rate)
   Transaction.update(
     {
       rate: rate,
       amount: amount,
-      total_spent: total_spent,
+      total_spent: total_spent_calc,
       type: type,
       base_id: base_id,
       quote_id: quote_id,
@@ -437,15 +442,32 @@ exports.updateTransaction = (req, res, next) => {
 
 exports.deleteTransaction = (req, res, next) => {
   const transaction_id = req.params.tx_id;
+  console.log(transaction_id)
+  Transaction.findAll({
+    limit: 1,
+    where: {
+      transaction_id: transaction_id
+    },
+    attributes: ['amount','total_spent','portfolio_id','base_id','type'],    
+  }).then(function(entries){
+    console.log(entries[0].base_id)
+    if (entries[0].type == "Buy"){
+    Balance.increment( {amount: -entries[0].amount, cost: -entries[0].total_spent},
+     {where: {cryptocurrency_id: entries[0].base_id, portfolio_id: entries[0].portfolio_id}}
+      );}
+    if (entries[0].type == "Sell"){
+    Balance.decrement( {amount: -entries[0].amount, cost: -entries[0].total_spent},
+     {where: {cryptocurrency_id: entries[0].base_id, portfolio_id: entries[0].portfolio_id}}
+      );}
   Transaction.destroy({
     where: {
       transaction_id: transaction_id,
     },
-  })
-    .then((deleted_count) => {
+  }).then((deleted_count) => {
       if (deleted_count > 0) {
         return res.status(200).json({
           message: "Transaction deleted successfully!",
+          
         });
       } else {
         return res.status(404).json({
@@ -454,4 +476,5 @@ exports.deleteTransaction = (req, res, next) => {
       }
     })
     .catch(res.status(500));
-};
+})
+}

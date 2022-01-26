@@ -30,10 +30,10 @@ const Transaction = sequalize.define('transactions', {
         type: Sequalize.UUID, //Used only when exchanging, null allowed
         allowNull: true,
     },
-    // quote_id: {
-    //     type: Sequalize.UUID, //Used when exchanging, null allowed
-    //     allowNull: true,
-    //},
+    quote_id: {
+        type: Sequalize.UUID, //Used when exchanging, null allowed
+        allowNull: true,
+    },
     date: {
         type: Sequalize.DATE  , //Timestamp for transaction
         allowNull: true,

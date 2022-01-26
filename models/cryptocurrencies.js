@@ -41,20 +41,11 @@ Cryptocurrency.hasMany(Transaction, {
     }
 })
 
-// Cryptocurrency.hasMany(Transaction, {
-//     foreignKey:{
-//         name: 'quote_id',
-//         allowNull: false,
-//     }
-// })
-
-Cryptocurrency.hasMany(Data, {
+Cryptocurrency.hasMany(Transaction, {
     foreignKey:{
-        name: 'coin_id',
+        name: 'quote_id',
         allowNull: false,
     }
 })
-
-
 
 module.exports = Cryptocurrency

@@ -106,13 +106,18 @@ const CoinGeckoClient = new CoinGecko();
 var funcImportHistoricalData = async() => {
     await wait(delay + 2000)
     var time1hour = Date.now() - 3600000;
+    if (Data.length == 0) {
+        lastRowTime = 0
+    } else {
     lastRowTime = await Data.findAll({
         limit: 1,
         attributes: ['createdAt'],
         order: [ [ 'timestamp', 'DESC' ]]
       }).then(function(entries){
         return entries[0].dataValues.createdAt
-      }); 
+      });
+    }
+
     if (time1hour > lastRowTime) {
         Data.sync({ force: true });
         console.log("REFRESH")
