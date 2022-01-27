@@ -10,10 +10,6 @@ const Data = sequalize.define('data', {
         allowNull: false,
         primaryKey: true,
     },
-    coin_id: {
-        type: Sequalize.UUID,
-        allowNull: false,
-    },
     timestamp: {
         type: Sequalize.DECIMAL(),
         allowNull: false,

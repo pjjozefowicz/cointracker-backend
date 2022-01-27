@@ -4,17 +4,12 @@ const sequalize = require('../utils/database')
 
 
 const Change = sequalize.define('change', {
-    data_id: {
-        type: Sequalize.UUID,
-        defaultValue: Sequalize.UUIDV4,
-        allowNull: false,
-        primaryKey: true,
-    },
     coin_name: {
-        type: Sequalize.STRING(16),
+        type: Sequalize.STRING(32),
         allowNull: true,
+        primaryKey:true,
     },
-    pln: {
+    rate: {
         type: Sequalize.DECIMAL(),
         allowNull: true,
     },
@@ -26,15 +21,15 @@ const Change = sequalize.define('change', {
         type: Sequalize.STRING(),
         allowNull: true,
     },
-    pln_1h: {
+    pln_1h_change: {
         type: Sequalize.DECIMAL(),
         allowNull: true,
     },
-    pln_1d: {
+    pln_1d_change: {
         type: Sequalize.DECIMAL(),
         allowNull: true,
     },
-    pln_7d: {
+    pln_7d_change: {
         type: Sequalize.DECIMAL(),
         allowNull: true,
     },

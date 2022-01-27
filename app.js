@@ -47,7 +47,6 @@ sequalize.sync()
 const coinsNumber = 10 //DECLARE VALUE OF COINS 1..250 WHEN > 100 THEN CHANGE PAGES DOWN BELOW
 
 
-
 function CountRequests() {
     ImportCoinsRequests = 1, 
     HistoricalRequests = coinsNumber, 
@@ -59,7 +58,6 @@ function CountRequests() {
   }
 
 delay = CountRequests()
-
 
 
 function wait(milleseconds) {
@@ -85,7 +83,7 @@ var funcImportCoinsFromCoingecko = async() => {
     Cryptocurrency.create({
         name: i.name,
         code: i.symbol,
-        coingecko_id: i.id,
+        cryptocurrency_id: i.id,
       })
         .then((coin) =>
         console.log("Coin created successfully!"),
@@ -106,30 +104,29 @@ const CoinGeckoClient = new CoinGecko();
 var funcImportHistoricalData = async() => {
     await wait(delay + 2000)
     var time1hour = Date.now() - 3600000;
+    if (Data.length == 0) {
+        lastRowTime = 0
+    } else {
     lastRowTime = await Data.findAll({
         limit: 1,
         attributes: ['createdAt'],
         order: [ [ 'timestamp', 'DESC' ]]
       }).then(function(entries){
         return entries[0].dataValues.createdAt
-      }); 
+      });
+    }
     if (time1hour > lastRowTime) {
         Data.sync({ force: true });
         console.log("REFRESH")
         namesTable = []
-        coinidsTable = []
         names = await Cryptocurrency.findAll()
         names.forEach((i) => {
-            namesTable.push(i.coingecko_id)
-            coinidsTable.push(i.cryptocurrency_id)        
+            namesTable.push(i.cryptocurrency_id)      
         })
-        console.log(coinidsTable)
         for (var i = 0; i < namesTable.length; i++) {
         await wait(1000)
-        coin_id = coinidsTable[i]
-        coin_name = namesTable[i]
-        
-        coin = await Cryptocurrency.findByPk(coin_id)
+        coin_name = namesTable[i]        
+        coin = await Cryptocurrency.findByPk(coin_name)
         let data = await CoinGeckoClient.coins.fetchMarketChart(namesTable[i], {
             vs_currency: 'pln',
             days: '7',
@@ -140,31 +137,24 @@ var funcImportHistoricalData = async() => {
             price = i[1]
             Data.create({
                 coin_name: coin_name,
-                coin_id: coin_id,
                 timestamp: timestamp,
                 price: price,
-              })
-                .then(() =>
-                console.log("historical data fetched")
-                )  
+              }) 
         })
         }
     } else {
         console.log("NIE REFRESH")
     }
-
-
+console.log("FINISH")
 };
 
 var funcImportCoinStats = async () => {
     await wait(delay + 3000)
     Change.sync({ force: true });
     namesTable = []
-    coinidsTable = []
     names = await Cryptocurrency.findAll()
     names.forEach((i) => {
-        namesTable.push(i.coingecko_id)
-        coinidsTable.push(i.cryptocurrency_id)
+        namesTable.push(i.cryptocurrency_id)
     })
     let data = await CoinGeckoClient.coins.markets({
         ids: namesTable,
@@ -181,12 +171,12 @@ var funcImportCoinStats = async () => {
             i.price_change_percentage_7d_in_currency, i.image )
             Change.create({
                 coin_name: i.id,
-                pln: i.current_price,
+                rate: i.current_price,
                 market_cap: i.market_cap,
                 image_url: i.image,
-                pln_1h: i.price_change_percentage_1h_in_currency,
-                pln_1d: i.price_change_percentage_24h_in_currency,
-                pln_7d: i.price_change_percentage_7d_in_currency
+                pln_1h_change: i.price_change_percentage_1h_in_currency,
+                pln_1d_change: i.price_change_percentage_24h_in_currency,
+                pln_7d_change: i.price_change_percentage_7d_in_currency
               })
                 .then(() =>
                 console.log("historical data fetched")
@@ -197,6 +187,7 @@ var funcImportCoinStats = async () => {
 };
 
 funcImportCoinsFromCoingecko()
-funcImportHistoricalData()
+funcImportCoinStats()
+funcImportHistoricalData() //USE IT ONLY ONCE WHEN DATABASE IS EMPTY
 setInterval(function() {funcImportCoinStats()}, delay+60000)
 setInterval(function() {funcImportHistoricalData()}, delay+3720000)

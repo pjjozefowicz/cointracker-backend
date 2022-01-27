@@ -34,7 +34,7 @@ router.post('/coin',[
     .trim()
     .isLength({ max:16 })
     .bail(),
-    check('coingecko_id')
+    check('cryptocurrency')
     .exists()
     .notEmpty()
     .isString()
@@ -49,5 +49,8 @@ router.delete('/coin/:coin_id', assetsController.deleteCoin);
 
 // UPDATE /assets/coin/coin_id
 router.put('/coin/:coin_id', assetsController.updateCoin);
+
+// GET dashboardinfo
+router.get('/dashboard/:portfolio_id', assetsController.getDashboardData);
 
 module.exports = router;

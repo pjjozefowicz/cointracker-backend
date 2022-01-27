@@ -32,7 +32,6 @@ router.post('/transaction',[
     .isString()
     .isIn(['Buy','Sell','Exchange']),    
     check('base_id')
-    .isUUID()
     .exists()
     .bail(),
     // check('quote_id')
@@ -49,7 +48,6 @@ router.post('/transaction',[
     .isString()
     .isLength({ max:35 }),
     check('portfolio_id')
-    .isUUID()
     .exists(),
 ], accountController.createTransaction);
 
@@ -100,12 +98,10 @@ router.get('/balances-by-portfolio/:portfolio_id', accountController.getBalances
 // POST /account/balance
 router.post('/balance',[
     check('portfolio_id')
-    .isUUID()
     .exists()
     .notEmpty()
     .bail(),
     check('currency_id')
-    .isUUID()
     .exists()
     .notEmpty(),
 ], accountController.createBalance);
