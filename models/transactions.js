@@ -27,11 +27,11 @@ const Transaction = sequalize.define('transactions', {
         allowNull: false,
     },
     base_id: {
-        type: Sequalize.UUID, //Used only when exchanging, null allowed
+        type: Sequalize.STRING(32), //Used only when exchanging, null allowed
         allowNull: true,
     },
     quote_id: {
-        type: Sequalize.UUID, //Used when exchanging, null allowed
+        type: Sequalize.STRING(32), //Used when exchanging, null allowed
         allowNull: true,
     },
     date: {

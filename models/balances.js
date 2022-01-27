@@ -10,6 +10,10 @@ const Balance = sequalize.define('balances', {
         allowNull: false,
         primaryKey: true,
     },
+    cryptocurrency_id: {
+        type: Sequalize.STRING(32), 
+        allowNull: true,
+    },
     amount: {
         type: Sequalize.DECIMAL(),
         allowNull: false,

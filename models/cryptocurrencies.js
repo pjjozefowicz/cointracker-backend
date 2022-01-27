@@ -8,14 +8,9 @@ const Change = require('./price_changes')
 
 const Cryptocurrency = sequalize.define('cryptocurrencies', {
     cryptocurrency_id: {
-        type: Sequalize.UUID,
-        defaultValue: Sequalize.UUIDV4,
-        allowNull: false,
-        primaryKey: true,
-    },
-    coingecko_id: {
         type: Sequalize.STRING(32),
         allowNull: false,
+        primaryKey: true        
     },
     name: {
         type: Sequalize.STRING(32),
@@ -44,6 +39,13 @@ Cryptocurrency.hasMany(Transaction, {
 Cryptocurrency.hasMany(Transaction, {
     foreignKey:{
         name: 'quote_id',
+        allowNull: false,
+    }
+})
+
+Cryptocurrency.hasMany(Change, {
+    foreignKey:{
+        name: 'coin_name',
         allowNull: false,
     }
 })
