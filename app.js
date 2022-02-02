@@ -15,6 +15,11 @@ const adminRoutes = require('./routes/admin')
 const { Op } = require('sequelize');
 const app = express();
 
+
+
+
+
+
 // app.use(bodyParser.urlencoded()); // x-www-form-urlencoded <form>
 app.use(bodyParser.json()); // application/json
 
@@ -29,7 +34,13 @@ app.use((req, res, next) => {
 app.use('/feed', feedRoutes);
 app.use('/account', accountRoutes);
 app.use('/admin', adminRoutes);
-app.use('/assets', assetsRoutes);
+// app.use('/assets/:id', checkJwt, assetsRoutes => {
+//     const id = Number(req.params.id)
+//     const event = events.find(event => event.id ===id);
+//     res.send(event);
+// });
+app.use('/assets/',assetsRoutes);
+
 // app.use('/')
 
 //sequalize.drop() 
@@ -96,6 +107,7 @@ var funcImportCoinsFromCoingecko = async() => {
 //1. Import coingecko-api
 const CoinGecko = require('coingecko-api');
 const { SequelizeScopeError } = require('sequelize/dist');
+const res = require('express/lib/response');
 
 //2. Initiate the CoinGecko API Client
 const CoinGeckoClient = new CoinGecko();
@@ -188,6 +200,6 @@ var funcImportCoinStats = async () => {
 
 funcImportCoinsFromCoingecko()
 funcImportCoinStats()
-funcImportHistoricalData() //USE IT ONLY ONCE WHEN DATABASE IS EMPTY
+//funcImportHistoricalData() //USE IT ONLY ONCE WHEN DATABASE IS EMPTY
 setInterval(function() {funcImportCoinStats()}, delay+60000)
 setInterval(function() {funcImportHistoricalData()}, delay+3720000)
