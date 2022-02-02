@@ -7,6 +7,29 @@ const { check } = require('express-validator/check');
 const User = require('../models/users');
 const { getUsers } = require('../controllers/admin');
 const { max } = require('pg/lib/defaults');
+const jwt = require("express-jwt"); // NEW
+const jwksRsa = require("jwks-rsa"); // NEW
+const authConfig = {
+    domain: "cointracker.eu.auth0.com",
+    audience: "https://cointracker.eu.auth0.com/api/v2/"
+  };
+
+// NEW
+// Create middleware to validate the JWT using express-jwt
+const checkJwt = jwt({
+  // Provide a signing key based on the key identifier in the header and the signing keys provided by your Auth0 JWKS endpoint.
+  secret: jwksRsa.expressJwtSecret({
+    cache: true,
+    rateLimit: true,
+    jwksRequestsPerMinute: 5,
+    jwksUri: `https://${authConfig.domain}/.well-known/jwks.json`
+  }),
+
+  // Validate the audience (Identifier) and the issuer (Domain).
+  audience: authConfig.audience,
+  issuer: `https://${authConfig.domain}/`,
+  algorithms: ["RS256"]
+});
 
 // GET /account/transactions
 router.get('/transactions', accountController.getTransactions);
@@ -61,7 +84,7 @@ router.put('/transaction/:tx_id', accountController.updateTransaction);
 router.get('/portfolios', accountController.getPortfolios);
 
 // GET /account/portfolio/:portfolio_id
-router.get('/portfolio/:portfolio_id', accountController.getPortfolio);
+router.get('/portfolio/:portfolio_id', checkJwt, accountController.getPortfolio);
 
 router.get('/portfolios-by-owner/:owner_id', accountController.getPortfoliosByUserId);
 
