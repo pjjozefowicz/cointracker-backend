@@ -65,6 +65,8 @@ router.get('/portfolio/:portfolio_id', accountController.getPortfolio);
 
 router.get('/portfolios-by-owner/:owner_id', accountController.getPortfoliosByUserId);
 
+router.post('/main-portfolio/:portfolio_id', accountController.setPortfolioAsMain);
+
 // POST /account/portfolio
 router.post('/portfolio',[
     //check('owner_id') PAMIETAC ZEBY ODKOMENTOWAC JAK BEDZIE AUTH0

@@ -27,6 +27,37 @@ exports.getPortfolio = (req, res, next) => {
     .catch(res.status(500));
 };
 
+exports.setPortfolioAsMain = (req, res, next) => {
+  const portfolio_id = req.params.portfolio_id;
+  Portfolio.update(
+    { is_main: false },
+    {
+      where: {
+        is_main: true,
+      },
+    }
+  )
+    .then((_) => {
+      Portfolio.update(
+        { is_main: true },
+        {
+          where: {
+            portfolio_id: portfolio_id,
+          },
+        }
+      )
+        .then((portfolio) => {
+          if (portfolio === null) {
+            return res.status(404);
+          } else {
+            return res.status(200).json(portfolio);
+          }
+        })
+        .catch(res.status(500));
+    })
+    .catch(res.status(500));
+};
+
 exports.getPortfoliosByUserId = (req, res, next) => {
   const owner_id = req.params.owner_id;
   Portfolio.findAll({
@@ -37,7 +68,16 @@ exports.getPortfoliosByUserId = (req, res, next) => {
     .then((portfolios) => {
       if (portfolios === null) {
         return res.status(404);
-      } else {
+      } else if (portfolios.length == 0) {
+        Portfolio.create({
+          name: 'Your portfolio',
+          owner_id: owner_id,
+          is_main: true,
+        }).then((portfolio) =>
+          res.status(200).json([portfolio])
+        ).catch(res.status(500));
+      }
+      else {
         return res.status(200).json(portfolios);
       }
     })
@@ -285,7 +325,7 @@ exports.getTransactionsByPortfolio = (req, res, next) => {
   Transaction.findAll({
     where: {
       portfolio_id: portfolio_id,
-      base_id: crypto_id
+      base_id: crypto_id,
     },
   })
     .then((transactions) => {
@@ -318,62 +358,65 @@ exports.createTransaction = (req, res, next) => {
           message: "Invalid UUID",
         });
       } else {
-      //  Cryptocurrency.findByPk(quote_id).then((quote) => {
-      //     if (quote === null) {
-      //       return res.status(422).json({
-      //         message: "Invalid UUID",
-      //       });
-      //     } else {
-            Portfolio.findByPk(portfolio_id).then((portfolio) => {
-              if (portfolio === null) {
-                return res.status(422).json({
-                  message: "Invalid UUID",
-                });
-              } else {
-                total_spent_calc = Number(rate) * Number(amount) 
-                Transaction.create({
-                  rate: rate,
-                  amount: amount,
-                  total_spent: total_spent_calc,
-                  type: type,
-                  base_id: base_id,
-                  quote_id: quote_id,
-                  date: date,
-                  fee: fee,
-                  note: note,
-                  portfolio_id: portfolio_id,
-                }).then((transaction) =>{
-                  if (type == "Sell"){
-                    amount_calc = Number(amount) * Number(-1)
-                    total_spent_calc = Number(total_spent_calc) * Number(-1)
-                  } else {
-                    amount_calc = Number(amount)
-                  }
-                  Balance.findAll({
-                    limit: 1,
-                    where: {
-                      portfolio_id: transaction.portfolio_id
-                    },
-                    attributes: ['cost','amount'],
-                  }).then(function(entries){
-                    Balance.update({
-                      amount: Number(entries[0].dataValues.amount)+amount_calc,
-                      cost: Number(entries[0].dataValues.cost)+total_spent_calc},
-                      {where: {
-                        portfolio_id: transaction.portfolio_id
-                      },
-                    })          
-                  }); 
-                  res.status(201).json({
-                    message: "transaction created successfully!",
-                    transaction: transaction,                  
-                  })
-                }
-                );
-              }
+        //  Cryptocurrency.findByPk(quote_id).then((quote) => {
+        //     if (quote === null) {
+        //       return res.status(422).json({
+        //         message: "Invalid UUID",
+        //       });
+        //     } else {
+        Portfolio.findByPk(portfolio_id).then((portfolio) => {
+          if (portfolio === null) {
+            return res.status(422).json({
+              message: "Invalid UUID",
             });
- //         }
- //       });
+          } else {
+            total_spent_calc = Number(rate) * Number(amount);
+            Transaction.create({
+              rate: rate,
+              amount: amount,
+              total_spent: total_spent_calc,
+              type: type,
+              base_id: base_id,
+              quote_id: quote_id,
+              date: date,
+              fee: fee,
+              note: note,
+              portfolio_id: portfolio_id,
+            }).then((transaction) => {
+              if (type == "Sell") {
+                amount_calc = Number(amount) * Number(-1);
+                total_spent_calc = Number(total_spent_calc) * Number(-1);
+              } else {
+                amount_calc = Number(amount);
+              }
+              Balance.findAll({
+                limit: 1,
+                where: {
+                  portfolio_id: transaction.portfolio_id,
+                },
+                attributes: ["cost", "amount"],
+              }).then(function (entries) {
+                Balance.update(
+                  {
+                    amount: Number(entries[0].dataValues.amount) + amount_calc,
+                    cost: Number(entries[0].dataValues.cost) + total_spent_calc,
+                  },
+                  {
+                    where: {
+                      portfolio_id: transaction.portfolio_id,
+                    },
+                  }
+                );
+              });
+              res.status(201).json({
+                message: "transaction created successfully!",
+                transaction: transaction,
+              });
+            });
+          }
+        });
+        //         }
+        //       });
       }
     });
   } else {
@@ -395,24 +438,46 @@ exports.updateTransaction = (req, res, next) => {
   const fee = req.body.fee;
   const note = req.body.note;
   const portfolio_id = req.body.portfolio_id;
-  total_spent_calc = Number(rate) * Number(amount)
+  total_spent_calc = Number(rate) * Number(amount);
   Transaction.findAll({
     limit: 1,
     where: {
-      transaction_id: transaction_id
+      transaction_id: transaction_id,
     },
-    attributes: ['amount','total_spent','portfolio_id','base_id','type'],
-  }).then(function(entries){
-    if (entries[0].type == type){
-      if (type == "Buy"){
-      Balance.increment( {amount: (Number(amount)-entries[0].amount), cost: (Number(total_spent_calc)-entries[0].total_spent)},
-      {where: {cryptocurrency_id: entries[0].base_id, portfolio_id: entries[0].portfolio_id}});}
-      if (type == "Sell"){
-      Balance.decrement( {amount: (Number(amount)-entries[0].amount), cost: (Number(total_spent_calc)-entries[0].total_spent)},
-      {where: {cryptocurrency_id: entries[0].base_id, portfolio_id: entries[0].portfolio_id}});}
-      }    
-    })
-  console.log("rate:", rate)
+    attributes: ["amount", "total_spent", "portfolio_id", "base_id", "type"],
+  }).then(function (entries) {
+    if (entries[0].type == type) {
+      if (type == "Buy") {
+        Balance.increment(
+          {
+            amount: Number(amount) - entries[0].amount,
+            cost: Number(total_spent_calc) - entries[0].total_spent,
+          },
+          {
+            where: {
+              cryptocurrency_id: entries[0].base_id,
+              portfolio_id: entries[0].portfolio_id,
+            },
+          }
+        );
+      }
+      if (type == "Sell") {
+        Balance.decrement(
+          {
+            amount: Number(amount) - entries[0].amount,
+            cost: Number(total_spent_calc) - entries[0].total_spent,
+          },
+          {
+            where: {
+              cryptocurrency_id: entries[0].base_id,
+              portfolio_id: entries[0].portfolio_id,
+            },
+          }
+        );
+      }
+    }
+  });
+  console.log("rate:", rate);
   Transaction.update(
     {
       rate: rate,
@@ -430,7 +495,9 @@ exports.updateTransaction = (req, res, next) => {
       where: {
         transaction_id: transaction_id,
       },
-    }).then((transaction) => {
+    }
+  )
+    .then((transaction) => {
       if (transaction > 0) {
         return res.status(200).json({ message: "transaction updated" });
       } else {
@@ -442,39 +509,53 @@ exports.updateTransaction = (req, res, next) => {
 
 exports.deleteTransaction = (req, res, next) => {
   const transaction_id = req.params.tx_id;
-  console.log(transaction_id)
+  console.log(transaction_id);
   Transaction.findAll({
     limit: 1,
     where: {
-      transaction_id: transaction_id
-    },
-    attributes: ['amount','total_spent','portfolio_id','base_id','type'],    
-  }).then(function(entries){
-    console.log(entries[0].base_id)
-    if (entries[0].type == "Buy"){
-    Balance.increment( {amount: -entries[0].amount, cost: -entries[0].total_spent},
-     {where: {cryptocurrency_id: entries[0].base_id, portfolio_id: entries[0].portfolio_id}}
-      );}
-    if (entries[0].type == "Sell"){
-    Balance.decrement( {amount: -entries[0].amount, cost: -entries[0].total_spent},
-     {where: {cryptocurrency_id: entries[0].base_id, portfolio_id: entries[0].portfolio_id}}
-      );}
-  Transaction.destroy({
-    where: {
       transaction_id: transaction_id,
     },
-  }).then((deleted_count) => {
-      if (deleted_count > 0) {
-        return res.status(200).json({
-          message: "Transaction deleted successfully!",
-          
-        });
-      } else {
-        return res.status(404).json({
-          message: "There is no such transaction",
-        });
-      }
+    attributes: ["amount", "total_spent", "portfolio_id", "base_id", "type"],
+  }).then(function (entries) {
+    console.log(entries[0].base_id);
+    if (entries[0].type == "Buy") {
+      Balance.increment(
+        { amount: -entries[0].amount, cost: -entries[0].total_spent },
+        {
+          where: {
+            cryptocurrency_id: entries[0].base_id,
+            portfolio_id: entries[0].portfolio_id,
+          },
+        }
+      );
+    }
+    if (entries[0].type == "Sell") {
+      Balance.decrement(
+        { amount: -entries[0].amount, cost: -entries[0].total_spent },
+        {
+          where: {
+            cryptocurrency_id: entries[0].base_id,
+            portfolio_id: entries[0].portfolio_id,
+          },
+        }
+      );
+    }
+    Transaction.destroy({
+      where: {
+        transaction_id: transaction_id,
+      },
     })
-    .catch(res.status(500));
-})
-}
+      .then((deleted_count) => {
+        if (deleted_count > 0) {
+          return res.status(200).json({
+            message: "Transaction deleted successfully!",
+          });
+        } else {
+          return res.status(404).json({
+            message: "There is no such transaction",
+          });
+        }
+      })
+      .catch(res.status(500));
+  });
+};
