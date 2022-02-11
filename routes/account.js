@@ -4,8 +4,7 @@ const accountController = require('../controllers/account');
 
 const router = express.Router();
 const { check } = require('express-validator/check');
-const User = require('../models/users');
-const { getUsers } = require('../controllers/admin');
+// const { getUsers } = require('../controllers/admin');
 const { max } = require('pg/lib/defaults');
 const jwt = require("express-jwt"); // NEW
 const jwksRsa = require("jwks-rsa"); // NEW

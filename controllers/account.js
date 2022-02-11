@@ -1,10 +1,9 @@
 const Portfolio = require("../models/portfolios");
 const Transaction = require("../models/transactions");
-const User = require("../models/users");
 const Balance = require("../models/balances");
 const { READCOMMITTED } = require("sequelize/dist/lib/table-hints");
 const { validationResult } = require("express-validator/check");
-const Cryptocurrency = require("../models/cryptocurrencies");
+const Cryptocurrency = require("../models/coins");
 const sequalize = require("../utils/database");
 const { port } = require("pg/lib/defaults");
 

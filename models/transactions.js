@@ -1,14 +1,11 @@
 const Sequalize = require('sequelize')
-
 const sequalize = require('../utils/database')
-const Cryptocurrency = require('./cryptocurrencies')
 
 const Transaction = sequalize.define('transactions', {
     transaction_id: {
-        type: Sequalize.UUID,
-        defaultValue: Sequalize.UUIDV4,
-        allowNull: false,
+        type: Sequalize.INTEGER,
         primaryKey: true,
+        autoIncrement: true // Automatically gets converted to SERIAL for postgres
     },
     rate: {
         type: Sequalize.DECIMAL(), //User inputs the rate value, we need .1234 numbers
@@ -35,7 +32,7 @@ const Transaction = sequalize.define('transactions', {
         allowNull: true,
     },
     date: {
-        type: Sequalize.DATE  , //Timestamp for transaction
+        type: Sequalize.DATE, //Timestamp for transaction
         allowNull: true,
     },
     fee: {
@@ -46,27 +43,11 @@ const Transaction = sequalize.define('transactions', {
         type: Sequalize.STRING(256), //Users note about transaction
         allowNull: false,
     },
-    portfolio_id: {
-        type: Sequalize.UUID,
-        allowNull: true,
+    balance_id: {
+        type: Sequalize.INTEGER,
+        allowNull: false,
     },
 })
 
 
 module.exports = Transaction
-
-// CREATE TABLE IF NOT EXISTS public."Transactions"
-// (
-//     transaction_id uuid NOT NULL,
-//     rate numeric NOT NULL,
-//     amount numeric NOT NULL,
-//     total_spent numeric NOT NULL,
-//     type character varying(16) NOT NULL,
-//     base_id uuid NOT NULL,
-//     quote_id uuid NOT NULL,
-//     data time without time zone NOT NULL,
-//     fee numeric,
-//     notes character varying(256),
-//     portfolio_id uuid NOT NULL,
-//     PRIMARY KEY (transaction_id)
-// );

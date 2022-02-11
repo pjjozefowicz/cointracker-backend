@@ -29,7 +29,7 @@ const checkJwt = jwt({
 });
 
 // GET /assets/coins
-router.get('/coins/', checkJwt, assetsController.getCoins);
+// router.get('/coins/', checkJwt, assetsController.getCoins);
 
 // app.use('/assets/:id', checkJwt, assetsRoutes => {
 //     const id = Number(req.params.id)
@@ -38,10 +38,10 @@ router.get('/coins/', checkJwt, assetsController.getCoins);
 // });
 
 // GET /assets/history
-router.get('/history/', assetsController.getHistory);
+// router.get('/history/', assetsController.getHistory);
 
 // GET /assets/coininfo
-router.get('/coininfo/', assetsController.getCoininfo)
+// router.get('/coininfo/', assetsController.getCoininfo)
 
 
 // GET /assets/coin/:coin_id
@@ -79,7 +79,7 @@ router.delete('/coin/:coin_id', assetsController.deleteCoin);
 // UPDATE /assets/coin/coin_id
 router.put('/coin/:coin_id', assetsController.updateCoin);
 
-// GET dashboardinfo
-router.get('/dashboard/:portfolio_id', assetsController.getDashboardData);
+// // GET dashboardinfo
+// router.get('/dashboard/:portfolio_id', assetsController.getDashboardData);
 
 module.exports = router;

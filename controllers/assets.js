@@ -1,28 +1,8 @@
 const Sequalize = require("sequelize");
-const Crypto = require("../models/cryptocurrencies");
-const Data = require("../models/historical_data");
+const Crypto = require("../models/coins");
 const { validationResult } = require("express-validator/check");
-const Change = require("../models/price_changes");
 const Balance = require("../models/balances");
 const sequalize = require("../utils/database");
-
-exports.getCoins = (req, res, next) => {
-  Crypto.findAll()
-    .then((coins) => res.status(200).json(coins))
-    .catch(res.status(500));
-};
-
-exports.getCoininfo = (req, res, next) => {
-    const coins = req.query.coins.split(',');
-    Change.findAll({
-      attributes: ['coin_name','rate','market_cap','pln_1h_change','pln_1d_change','pln_7d_change','image_url'],
-      where: {
-        coin_name: coins,
-      },
-    })
-    .then((coins) => res.status(200).json(coins))
-    .catch(res.status(500));
-};
 
 exports.getDashboardData = (req, res, next) => {
   const portfolio_id = req.params.portfolio_id;
@@ -47,42 +27,6 @@ exports.getDashboardData = (req, res, next) => {
     .catch(res.status(500));
 };
 
-exports.getHistory = (req, res, next) => {
-  const coins = req.query.coins.split(',');
-  Data.findAll({
-    attributes: ["coin_name", "timestamp", "price"],
-    where: {
-      coin_name: coins,
-    },
-  })
-
-    .then((values) => { 
-      var dataArray = {}
-      var price = {}
-      var dataArray2 = []
-      price["price"] = []
-      price["timestamp"] = []
-      
-      for (var c = 0; c < coins.length;c++) {
-      counter = 0         
-      values.forEach((i) => {                
-         if (i.coin_name == coins[c]){
-           counter = counter + 1      
-           if (counter % 4 === 0 && counter % 3 === 0 ) {
-            price["price"] = i.price
-            price["timestamp"] = i.timestamp
-            dataArray2.push(JSON.parse(JSON.stringify(price)))
-            console.log(price)  
-            console.log(dataArray2) 
-          } 
-      }
-         })
-         dataArray[coins[c]] = dataArray2 
-      }
-      res.status(200).json(dataArray);
-    })
-    .catch(res.status(500));
-};
 exports.getCoin = (req, res, next) => {
   const coin_id = req.params.coin_id;
   Crypto.findByPk(coin_id)

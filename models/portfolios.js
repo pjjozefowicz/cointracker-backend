@@ -1,16 +1,12 @@
 const Sequalize = require('sequelize')
-
 const sequalize = require('../utils/database')
 const Balance = require('./balances')
-const Transaction = require('./transactions')
-
 
 const Portfolio = sequalize.define('portfolios', {
     portfolio_id: {
-        type: Sequalize.UUID,
-        defaultValue: Sequalize.UUIDV4,
-        allowNull: false,
+        type: Sequalize.INTEGER,
         primaryKey: true,
+        autoIncrement: true
     },
     name: {
         type: Sequalize.STRING(32),
@@ -26,15 +22,8 @@ const Portfolio = sequalize.define('portfolios', {
     },
 })
 
-Portfolio.hasMany(Transaction, {
-    foreignKey:{
-        name: 'portfolio_id',
-        allowNull: false,
-    }
-})
-
 Portfolio.hasMany(Balance, {
-    foreignKey:{
+    foreignKey: {
         name: 'portfolio_id',
         allowNull: false,
     }
