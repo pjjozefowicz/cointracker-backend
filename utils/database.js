@@ -2,7 +2,8 @@ const Sequelize = require('sequelize')
 
 const sequelize = new Sequelize('testing', 'alice', '1234', {
     host: 'localhost',
-    dialect: 'postgres'
+    dialect: 'postgres',
+    logging: false
   });
 
 module.exports = sequelize
