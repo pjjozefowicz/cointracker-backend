@@ -8,16 +8,18 @@ const Balance = sequalize.define('balances', {
         primaryKey: true,
         autoIncrement: true
     },
-    cryptocurrency_id: {
-        type: Sequalize.STRING(32),
-        allowNull: true,
-    },
     amount: {
         type: Sequalize.DECIMAL(),
         allowNull: false,
     },
     portfolio_id: {
         type: Sequalize.INTEGER,
+        primaryKey: true,
+        allowNull: false,
+    },
+    coin_id: {
+        type: Sequalize.STRING(32),
+        primaryKey: true,
         allowNull: false,
     },
     cost: {

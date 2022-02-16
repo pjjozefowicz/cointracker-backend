@@ -20,7 +20,7 @@ const Transaction = sequalize.define('transactions', {
         allowNull: false,
     },
     type: {
-        type: Sequalize.STRING(8), //buy or sell or exchange, max 8 chars
+        type: Sequalize.STRING(4), //buy or sell or exchange, max 8 chars
         allowNull: false,
     },
     base_id: {
@@ -33,21 +33,20 @@ const Transaction = sequalize.define('transactions', {
     },
     date: {
         type: Sequalize.DATE, //Timestamp for transaction
-        allowNull: true,
+        allowNull: false,
     },
     fee: {
         type: Sequalize.DECIMAL(), //User inputs the fee value, we need .1234 numbers
-        allowNull: false,
+        allowNull: true,
     },
     note: {
         type: Sequalize.STRING(256), //Users note about transaction
-        allowNull: false,
+        allowNull: true,
     },
     balance_id: {
         type: Sequalize.INTEGER,
         allowNull: false,
     },
 })
-
 
 module.exports = Transaction

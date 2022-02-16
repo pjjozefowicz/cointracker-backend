@@ -202,7 +202,11 @@ exports.getBalancesByPortfolioId = (req, res, next) => {
   const portfolio_id = req.params.portfolio_id;
   sequalize
     .query(
-      `SELECT cryptocurrencies.cryptocurrency_id, cryptocurrencies.coingecko_id, cryptocurrencies.name, cryptocurrencies.code, balances.amount FROM balances INNER JOIN cryptocurrencies ON balances.cryptocurrency_id = cryptocurrencies.cryptocurrency_id WHERE balances.portfolio_id = '${portfolio_id}'`,
+      `SELECT balances.balance_id, balances.amount AS balance_amount, balances.cost AS balance_cost, coins.coin_id, 
+      coins.code AS coin_code, coins.name AS coin_name, coins.current_price AS coin_current_price, coins.image_url AS coin_image_url, 
+      coins.market_cap AS coin_market_cap, coins.market_cap_rank AS coin_market_cap_rank, coins.price_change_1h AS coin_price_change_1h, 
+      coins.price_change_24h AS coin_price_change_24h, coins.price_change_7d AS coin_price_change_7d, coins.sparkline AS coin_sparkline  
+      FROM balances INNER JOIN coins ON balances.coin_id = coins.coin_id WHERE balances.portfolio_id = '${portfolio_id}'`,
       { type: sequalize.QueryTypes.SELECT }
     )
     .then((balances) => {
@@ -216,33 +220,47 @@ exports.getBalancesByPortfolioId = (req, res, next) => {
 };
 
 exports.createBalance = (req, res, next) => {
-  const amount = req.body.amount;
   const portfolio_id = req.body.portfolio_id;
-  const currency_id = req.body.currency_id;
+  const coin_id = req.body.coin_id;
   const errors = validationResult(req);
   if (errors.isEmpty()) {
     Portfolio.findByPk(portfolio_id).then((portfolio) => {
       if (portfolio === null) {
         return res.status(422).json({
-          message: "Invalid UUID",
+          message: "This portfolio doesn't exist",
         });
       } else {
-        Cryptocurrency.findByPk(currency_id).then((currency) => {
+        Cryptocurrency.findByPk(coin_id).then((currency) => {
           if (currency === null) {
             return res.status(422).json({
-              message: "Invalid UUID",
+              message: "Invalid currency",
             });
           } else {
             Balance.create({
-              amount: amount,
+              amount: 0,
               portfolio_id: portfolio_id,
-              cryptocurrency_id: currency_id,
+              coin_id: coin_id,
               cost: 0,
-            }).then((balance) =>
-              res.status(201).json({
-                message: "Balance created successfully!",
-                balance: balance,
-              })
+            }).then((balance) => {
+              sequalize
+                .query(
+                  `SELECT balances.balance_id, balances.amount AS balance_amount, balances.cost AS balance_cost, coins.coin_id, 
+                  coins.code AS coin_code, coins.name AS coin_name, coins.current_price AS coin_current_price, coins.image_url AS coin_image_url, 
+                  coins.market_cap AS coin_market_cap, coins.market_cap_rank AS coin_market_cap_rank, coins.price_change_1h AS coin_price_change_1h, 
+                  coins.price_change_24h AS coin_price_change_24h, coins.price_change_7d AS coin_price_change_7d, coins.sparkline AS coin_sparkline 
+                  FROM balances INNER JOIN coins ON balances.coin_id = coins.coin_id WHERE balances.balance_id = '${balance.balance_id}'`,
+                  { type: sequalize.QueryTypes.SELECT }
+                )
+                .then((full_balance) => {
+                  full_balance = full_balance[0]
+                  if (full_balance === null) {
+                    return res.status(404);
+                  } else {
+                    return res.status(201).json(full_balance);
+                  }
+                })
+                .catch(res.status(500));
+            }
             );
           }
         });
@@ -250,7 +268,7 @@ exports.createBalance = (req, res, next) => {
     });
   } else {
     return res.status(422).json({
-      message: "Invalid UUID",
+      message: "Parameters are not correct",
     });
   }
 };
@@ -320,7 +338,7 @@ exports.getTransaction = (req, res, next) => {
 
 exports.getTransactionsByPortfolio = (req, res, next) => {
   const portfolio_id = req.params.portfolio_id;
-  const crypto_id = req.params.cryptocurrency_id;
+  const crypto_id = req.params.coin_id;
   Transaction.findAll({
     where: {
       portfolio_id: portfolio_id,
@@ -337,87 +355,82 @@ exports.getTransactionsByPortfolio = (req, res, next) => {
     .catch(res.status(500));
 };
 
+exports.getTransactionsByBalance = (req, res, next) => {
+  const balance_id = req.params.balance_id;
+  Transaction.findAll({
+    where: {
+      balance_id: balance_id
+    },
+  })
+    .then((transactions) => {
+      if (transactions === null) {
+        return res.status(404);
+      } else {
+        return res.status(200).json(transactions);
+      }
+    })
+    .catch(res.status(500));
+};
+
 exports.createTransaction = (req, res, next) => {
+  console.log(req.body)
   const rate = req.body.rate;
   const amount = req.body.amount;
   const total_spent = req.body.total_spent;
   const type = req.body.type;
-  const base_id = req.body.base_id;
-  const quote_id = req.body.quote_id;
+  // const base_id = req.body.base_id;
+  // const quote_id = req.body.quote_id;
   const date = req.body.date;
   const fee = req.body.fee;
   const note = req.body.note;
-  const portfolio_id = req.body.portfolio_id;
+  const balance_id = req.body.balance_id;
   const errors = validationResult(req);
 
   if (errors.isEmpty()) {
-    Cryptocurrency.findByPk(base_id).then((base) => {
-      if (base === null) {
+    Balance.findByPk(balance_id).then((balance) => {
+      if (balance === null) {
         return res.status(422).json({
-          message: "Invalid UUID",
-        });
+          message: "Invalid balance",
+        })
       } else {
-        //  Cryptocurrency.findByPk(quote_id).then((quote) => {
-        //     if (quote === null) {
-        //       return res.status(422).json({
-        //         message: "Invalid UUID",
-        //       });
-        //     } else {
-        Portfolio.findByPk(portfolio_id).then((portfolio) => {
-          if (portfolio === null) {
-            return res.status(422).json({
-              message: "Invalid UUID",
-            });
+        Transaction.create({
+          rate: rate,
+          amount: amount,
+          total_spent: total_spent,
+          type: type,
+          date: date,
+          fee: fee,
+          note: note,
+          balance_id: balance_id,
+        }).then((transaction) => {
+          if (type == "Sell") {
+            amount_calc = Number(amount) * Number(-1);
+            total_spent_calc = Number(total_spent) * Number(-1);
           } else {
-            total_spent_calc = Number(rate) * Number(amount);
-            Transaction.create({
-              rate: rate,
-              amount: amount,
-              total_spent: total_spent_calc,
-              type: type,
-              base_id: base_id,
-              quote_id: quote_id,
-              date: date,
-              fee: fee,
-              note: note,
-              portfolio_id: portfolio_id,
-            }).then((transaction) => {
-              if (type == "Sell") {
-                amount_calc = Number(amount) * Number(-1);
-                total_spent_calc = Number(total_spent_calc) * Number(-1);
-              } else {
-                amount_calc = Number(amount);
-              }
-              Balance.findAll({
-                limit: 1,
-                where: {
-                  portfolio_id: transaction.portfolio_id,
-                },
-                attributes: ["cost", "amount"],
-              }).then(function (entries) {
-                Balance.update(
-                  {
-                    amount: Number(entries[0].dataValues.amount) + amount_calc,
-                    cost: Number(entries[0].dataValues.cost) + total_spent_calc,
-                  },
-                  {
-                    where: {
-                      portfolio_id: transaction.portfolio_id,
-                    },
-                  }
-                );
-              });
-              res.status(201).json({
-                message: "transaction created successfully!",
-                transaction: transaction,
-              });
-            });
+            amount_calc = Number(amount);
+            total_spent_calc = Number(total_spent);
           }
-        });
-        //         }
-        //       });
+          Balance.update(
+            {
+              amount: Number(balance.amount) + amount_calc,
+              cost: Number(balance.cost) + total_spent_calc,
+            },
+            {
+              where: {
+                balance_id: balance_id,
+              },
+              returning: true,
+            }
+          ).then((result) => {
+            res.status(201).json({
+              message: "Transaction created successfully!, balance updated",
+              transaction: transaction,
+              balance: result[1][0].dataValues
+            });
+          })
+        })
       }
-    });
+    })
   } else {
     return res.status(422).json({
       message: "Invalid Validation",
@@ -454,7 +467,7 @@ exports.updateTransaction = (req, res, next) => {
           },
           {
             where: {
-              cryptocurrency_id: entries[0].base_id,
+              coin_id: entries[0].base_id,
               portfolio_id: entries[0].portfolio_id,
             },
           }
@@ -468,7 +481,7 @@ exports.updateTransaction = (req, res, next) => {
           },
           {
             where: {
-              cryptocurrency_id: entries[0].base_id,
+              coin_id: entries[0].base_id,
               portfolio_id: entries[0].portfolio_id,
             },
           }
@@ -476,7 +489,6 @@ exports.updateTransaction = (req, res, next) => {
       }
     }
   });
-  console.log("rate:", rate);
   Transaction.update(
     {
       rate: rate,
@@ -522,7 +534,7 @@ exports.deleteTransaction = (req, res, next) => {
         { amount: -entries[0].amount, cost: -entries[0].total_spent },
         {
           where: {
-            cryptocurrency_id: entries[0].base_id,
+            coin_id: entries[0].base_id,
             portfolio_id: entries[0].portfolio_id,
           },
         }
@@ -533,7 +545,7 @@ exports.deleteTransaction = (req, res, next) => {
         { amount: -entries[0].amount, cost: -entries[0].total_spent },
         {
           where: {
-            cryptocurrency_id: entries[0].base_id,
+            coin_id: entries[0].base_id,
             portfolio_id: entries[0].portfolio_id,
           },
         }

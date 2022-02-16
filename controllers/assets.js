@@ -1,5 +1,5 @@
 const Sequalize = require("sequelize");
-const Crypto = require("../models/coins");
+const Coin = require("../models/coins");
 const { validationResult } = require("express-validator/check");
 const Balance = require("../models/balances");
 const sequalize = require("../utils/database");
@@ -8,12 +8,12 @@ exports.getDashboardData = (req, res, next) => {
   const portfolio_id = req.params.portfolio_id;
   sequalize
     .query(
-      `SELECT balances.cryptocurrency_id, cr.name, cr.code, balances.amount, balances.cost, ch.rate, ch.market_cap, ch.pln_1h_change, ch.pln_1d_change, ch.pln_7d_change, ch.image_url
+      `SELECT balances.Coincurrency_id, cr.name, cr.code, balances.amount, balances.cost, ch.rate, ch.market_cap, ch.pln_1h_change, ch.pln_1d_change, ch.pln_7d_change, ch.image_url
       FROM balances 
-      INNER JOIN cryptocurrencies AS cr
-      ON balances.cryptocurrency_id = cr.cryptocurrency_id
+      INNER JOIN Coincurrencies AS cr
+      ON balances.Coincurrency_id = cr.Coincurrency_id
       INNER JOIN changes AS ch
-      ON balances.cryptocurrency_id = ch.coin_name
+      ON balances.Coincurrency_id = ch.coin_name
       WHERE balances.portfolio_id = '${portfolio_id}'`,
       { type: sequalize.QueryTypes.SELECT }
     )
@@ -27,9 +27,33 @@ exports.getDashboardData = (req, res, next) => {
     .catch(res.status(500));
 };
 
+exports.getCoins = (req, res, next) => {
+  Coin.findAll()
+    .then((coins) => {
+      if (coins === null) {
+        return res.status(500).send("No coins");
+      } else {
+        return res.status(200).json(coins);
+      }
+    })
+    .catch(res.status(500));
+};
+
+exports.getCoinsShort = (req, res, next) => {
+  Coin.findAll({attributes: ['coin_id', 'name', 'code', 'image_url']})
+    .then((coins) => {
+      if (coins === null) {
+        return res.status(500).send("No coins");
+      } else {
+        return res.status(200).json(coins);
+      }
+    })
+    .catch(res.status(500));
+};
+
 exports.getCoin = (req, res, next) => {
   const coin_id = req.params.coin_id;
-  Crypto.findByPk(coin_id)
+  Coin.findByPk(coin_id)
     .then((coin) => {
       if (coin === null) {
         return res.status(404);
@@ -43,13 +67,13 @@ exports.getCoin = (req, res, next) => {
 exports.createCoin = (req, res, next) => {
   const name = req.body.name;
   const code = req.body.code;
-  const cryptocurrency_id = req.body.coingecko_id;
+  const Coincurrency_id = req.body.coingecko_id;
   const errors = validationResult(req);
   if (errors.isEmpty()) {
-    Crypto.create({
+    Coin.create({
       name: name,
       code: code,
-      cryptoccurency_id: coingecko_id,
+      Coinccurency_id: coingecko_id,
     })
       .then((coin) =>
         res.status(201).json({
@@ -67,9 +91,9 @@ exports.createCoin = (req, res, next) => {
 
 exports.deleteCoin = (req, res, next) => {
   const coin_id = req.params.coin_id;
-  Crypto.destroy({
+  Coin.destroy({
     where: {
-      cryptocurrency_id: coin_id,
+      Coincurrency_id: coin_id,
     },
   })
     .then((deleted_count) => {
@@ -90,16 +114,16 @@ exports.updateCoin = (req, res, next) => {
   const coin_id = req.params.coin_id;
   const name = req.body.name;
   const code = req.body.code;
-  const cryptocurrency_id = req.body.coingecko_id;
-  Crypto.update(
+  const Coincurrency_id = req.body.coingecko_id;
+  Coin.update(
     {
       name: name,
       code: code,
-      cryptocurrency_id: coingecko_id,
+      Coincurrency_id: coingecko_id,
     },
     {
       where: {
-        cryptocurrency_id: coin_id,
+        Coincurrency_id: coin_id,
       },
     }
   )

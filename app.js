@@ -3,6 +3,7 @@ const express = require('express');
 const cron = require('node-cron');
 const bodyParser = require('body-parser');
 
+const checkJwt = require('./auth/jwt_auth')
 const sequalize = require('./utils/database')
 const accountRoutes = require('./routes/account')
 const assetsRoutes = require('./routes/assets')
@@ -23,6 +24,8 @@ app.use((req, res, next) => {
     next();
 });
 
+app.use(checkJwt)
+
 app.use('/account', accountRoutes);
 // app.use('/admin', adminRoutes);
 // app.use('/assets/:id', checkJwt, assetsRoutes => {
@@ -31,6 +34,15 @@ app.use('/account', accountRoutes);
 //     res.send(event);
 // });
 app.use('/assets/', assetsRoutes);
+
+app.use(function (err, req, res, next) {
+    if (err.name === 'UnauthorizedError') {
+        res.status(err.status).send(err.inner);
+    }
+    else {
+        next(err)
+    }
+});
 
 // app.use('/')
 
