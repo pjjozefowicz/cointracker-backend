@@ -372,7 +372,7 @@ exports.getTransactionsByBalance = (req, res, next) => {
     .catch(res.status(500));
 };
 
-exports.createTransaction = (req, res, next) => {
+exports.createTransaction = async (req, res, next) => {
   console.log(req.body)
   const rate = req.body.rate;
   const amount = req.body.amount;
@@ -385,188 +385,160 @@ exports.createTransaction = (req, res, next) => {
   const note = req.body.note;
   const balance_id = req.body.balance_id;
   const errors = validationResult(req);
-
   if (errors.isEmpty()) {
-    Balance.findByPk(balance_id).then((balance) => {
+    try {
+      const balance = await Balance.findByPk(balance_id)
       if (balance === null) {
-        return res.status(422).json({
+        return res.status(400).json({
           message: "Invalid balance",
         })
-      } else {
-        Transaction.create({
-          rate: rate,
-          amount: amount,
-          total_spent: total_spent,
-          type: type,
-          date: date,
-          fee: fee,
-          note: note,
-          balance_id: balance_id,
-        }).then((transaction) => {
-          if (type == "Sell") {
-            amount_calc = Number(amount) * Number(-1);
-            total_spent_calc = Number(total_spent) * Number(-1);
-          } else {
-            amount_calc = Number(amount);
-            total_spent_calc = Number(total_spent);
-          }
-          Balance.update(
-            {
-              amount: Number(balance.amount) + amount_calc,
-              cost: Number(balance.cost) + total_spent_calc,
-            },
-            {
-              where: {
-                balance_id: balance_id,
-              },
-              returning: true,
-            }
-          ).then((result) => {
-            res.status(201).json({
-              message: "Transaction created successfully!, balance updated",
-              transaction: transaction,
-              balance: result[1][0].dataValues
-            });
-          })
+      }
+      const tx = await Transaction.create({
+        rate: rate,
+        amount: amount,
+        total_spent: total_spent,
+        type: type,
+        date: date,
+        fee: fee,
+        note: note,
+        balance_id: balance_id,
+      })
+      if (tx.type.toLowerCase() == "buy") {
+        balance.set({
+          amount: Number(balance.amount) + Number(tx.amount),
+          cost: Number(balance.cost) + Number(tx.total_spent),
         })
       }
+      else {
+        balance.set({
+          amount: Number(balance.amount) - Number(tx.amount),
+          cost: Number(balance.cost) - Number(tx.total_spent),
+        })
+      }
+      await balance.save()
+      const full_balance = await getFullBalance(balance.balance_id)
+      return res.status(200).json({
+        message: "Transaction created successfully!",
+        transaction: tx,
+        balance: full_balance[0]
+      })
+    }
+    catch (e) {
+      console.error(e)
+      return res.status(500).json({
+        message: "Something went wrong",
+      })
+    }
+  }
+  else {
+    return res.status(400).json({
+      message: "Invalid parameters",
     })
-  } else {
-    return res.status(422).json({
-      message: "Invalid Validation",
-    });
   }
 };
 
-exports.updateTransaction = (req, res, next) => {
+exports.updateTransaction = async (req, res, next) => {
   const transaction_id = req.params.tx_id;
   const rate = req.body.rate;
   const amount = req.body.amount;
   const total_spent = req.body.total_spent;
   const type = req.body.type;
-  const base_id = req.body.base_id;
-  const quote_id = req.body.quote_id;
+  // const base_id = req.body.base_id;
+  // const quote_id = req.body.quote_id;
   const date = req.body.date;
   const fee = req.body.fee;
   const note = req.body.note;
-  const portfolio_id = req.body.portfolio_id;
-  total_spent_calc = Number(rate) * Number(amount);
-  Transaction.findAll({
-    limit: 1,
-    where: {
-      transaction_id: transaction_id,
-    },
-    attributes: ["amount", "total_spent", "portfolio_id", "base_id", "type"],
-  }).then(function (entries) {
-    if (entries[0].type == type) {
-      if (type == "Buy") {
-        Balance.increment(
-          {
-            amount: Number(amount) - entries[0].amount,
-            cost: Number(total_spent_calc) - entries[0].total_spent,
-          },
-          {
-            where: {
-              coin_id: entries[0].base_id,
-              portfolio_id: entries[0].portfolio_id,
-            },
-          }
-        );
-      }
-      if (type == "Sell") {
-        Balance.decrement(
-          {
-            amount: Number(amount) - entries[0].amount,
-            cost: Number(total_spent_calc) - entries[0].total_spent,
-          },
-          {
-            where: {
-              coin_id: entries[0].base_id,
-              portfolio_id: entries[0].portfolio_id,
-            },
-          }
-        );
-      }
+  const balance_id = req.body.balance_id;
+  try {
+    const tx = await Transaction.findByPk(transaction_id)
+    const balance = await Balance.findByPk(balance_id)
+    if (tx === null) {
+      return res.status(400).json({ message: "Transaction invalid" })
+    } else if (balance === null) {
+      return res.status(400).json({ message: "Balance invalid" })
     }
-  });
-  Transaction.update(
-    {
+    if (tx.type.toLowerCase() === "sell") {
+      balance.set({
+        amount: Number(balance.amount) + Number(tx.amount),
+        cost: Number(balance.cost) + Number(tx.total_spent),
+      })
+      balance.set({
+        amount: Number(balance.amount) - Number(amount),
+        cost: Number(balance.cost) - Number(total_spent),
+      })
+    }
+    else {
+      balance.set({
+        amount: Number(balance.amount) - Number(tx.amount),
+        cost: Number(balance.cost) - Number(tx.total_spent),
+      })
+      balance.set({
+        amount: Number(balance.amount) + Number(amount),
+        cost: Number(balance.cost) + Number(total_spent),
+      })
+    }
+    await balance.save()
+    tx.set({
       rate: rate,
       amount: amount,
-      total_spent: total_spent_calc,
-      type: type,
-      base_id: base_id,
-      quote_id: quote_id,
+      total_spent: total_spent,
       date: date,
       fee: fee,
-      note: note,
-      portfolio_id: portfolio_id,
-    },
-    {
-      where: {
-        transaction_id: transaction_id,
-      },
-    }
-  )
-    .then((transaction) => {
-      if (transaction > 0) {
-        return res.status(200).json({ message: "transaction updated" });
-      } else {
-        return res.status(404).json({ message: "There's no such transaction" });
-      }
+      note: note
     })
-    .catch(res.status(500));
+    updatedTx = await tx.save()
+    const full_balance = await getFullBalance(balance.balance_id)
+    return res.status(200).json({ message: "Transaction updated", transaction: updatedTx, balance: full_balance[0] });
+  } catch (e) {
+    console.error(e)
+    return res.status(500).json({ message: "Something went wrong" })
+  }
 };
 
-exports.deleteTransaction = (req, res, next) => {
+exports.deleteTransaction = async (req, res, next) => {
   const transaction_id = req.params.tx_id;
-  console.log(transaction_id);
-  Transaction.findAll({
-    limit: 1,
-    where: {
-      transaction_id: transaction_id,
-    },
-    attributes: ["amount", "total_spent", "portfolio_id", "base_id", "type"],
-  }).then(function (entries) {
-    console.log(entries[0].base_id);
-    if (entries[0].type == "Buy") {
-      Balance.increment(
-        { amount: -entries[0].amount, cost: -entries[0].total_spent },
-        {
-          where: {
-            coin_id: entries[0].base_id,
-            portfolio_id: entries[0].portfolio_id,
-          },
-        }
-      );
+  try {
+    const tx = await Transaction.findByPk(transaction_id)
+    const balance = await Balance.findByPk(tx.balance_id)
+    if (tx === null) {
+      return res.status(400).json({ message: "Transaction invalid" })
+    } else if (balance === null) {
+      return res.status(400).json({ message: "Balance invalid" })
     }
-    if (entries[0].type == "Sell") {
-      Balance.decrement(
-        { amount: -entries[0].amount, cost: -entries[0].total_spent },
-        {
-          where: {
-            coin_id: entries[0].base_id,
-            portfolio_id: entries[0].portfolio_id,
-          },
-        }
-      );
-    }
-    Transaction.destroy({
-      where: {
-        transaction_id: transaction_id,
-      },
-    })
-      .then((deleted_count) => {
-        if (deleted_count > 0) {
-          return res.status(200).json({
-            message: "Transaction deleted successfully!",
-          });
-        } else {
-          return res.status(404).json({
-            message: "There is no such transaction",
-          });
-        }
+    if (tx.type.toLowerCase() == "buy") {
+      balance.set({
+        amount: Number(balance.amount) - Number(tx.amount),
+        cost: Number(balance.cost) - Number(tx.total_spent),
       })
-      .catch(res.status(500));
-  });
-};
+    }
+    else {
+      balance.set({
+        amount: Number(balance.amount) + Number(tx.amount),
+        cost: Number(balance.cost) + Number(tx.total_spent),
+      })
+    }
+    await balance.save()
+    await tx.destroy()
+    const full_balance = await getFullBalance(balance.balance_id)
+    return res.status(200).json({
+      message: "Transaction deleted successfully!",
+      transaction: tx,
+      balance: full_balance[0]
+    })
+  } catch (e) {
+    console.error(e)
+    return res.status(500).json({ message: "Something went wrong" })
+  }
+}
+
+function getFullBalance(balance_id) {
+  return sequalize
+    .query(
+      `SELECT balances.balance_id, balances.amount AS balance_amount, balances.cost AS balance_cost, coins.coin_id, 
+                  coins.code AS coin_code, coins.name AS coin_name, coins.current_price AS coin_current_price, coins.image_url AS coin_image_url, 
+                  coins.market_cap AS coin_market_cap, coins.market_cap_rank AS coin_market_cap_rank, coins.price_change_1h AS coin_price_change_1h, 
+                  coins.price_change_24h AS coin_price_change_24h, coins.price_change_7d AS coin_price_change_7d, coins.sparkline AS coin_sparkline 
+                  FROM balances INNER JOIN coins ON balances.coin_id = coins.coin_id WHERE balances.balance_id = '${balance_id}'`,
+      { type: sequalize.QueryTypes.SELECT }
+    )
+}
