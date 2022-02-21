@@ -41,15 +41,15 @@ const Coin = sequalize.define('coins', {
         type: Sequalize.DECIMAL(),
         allowNull: false,
     },
-    price_change_1h: {
+    price_change_prc_1h: {
         type: Sequalize.DECIMAL(),
         allowNull: false, 
     },
-    price_change_24h: {
+    price_change_prc_24h: {
         type: Sequalize.DECIMAL(),
         allowNull: false, 
     },
-    price_change_7d: {
+    price_change_prc_7d: {
         type: Sequalize.DECIMAL(),
         allowNull: false, 
     },

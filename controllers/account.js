@@ -204,8 +204,8 @@ exports.getBalancesByPortfolioId = (req, res, next) => {
     .query(
       `SELECT balances.balance_id, balances.amount AS balance_amount, balances.cost AS balance_cost, coins.coin_id, 
       coins.code AS coin_code, coins.name AS coin_name, coins.current_price AS coin_current_price, coins.image_url AS coin_image_url, 
-      coins.market_cap AS coin_market_cap, coins.market_cap_rank AS coin_market_cap_rank, coins.price_change_1h AS coin_price_change_1h, 
-      coins.price_change_24h AS coin_price_change_24h, coins.price_change_7d AS coin_price_change_7d, coins.sparkline AS coin_sparkline  
+      coins.market_cap AS coin_market_cap, coins.market_cap_rank AS coin_market_cap_rank, coins.price_change_prc_1h AS coin_price_change_prc_1h, 
+      coins.price_change_prc_24h AS coin_price_change_prc_24h, coins.price_change_prc_7d AS coin_price_change_prc_7d, coins.sparkline AS coin_sparkline  
       FROM balances INNER JOIN coins ON balances.coin_id = coins.coin_id WHERE balances.portfolio_id = '${portfolio_id}'`,
       { type: sequalize.QueryTypes.SELECT }
     )
@@ -242,15 +242,7 @@ exports.createBalance = (req, res, next) => {
               coin_id: coin_id,
               cost: 0,
             }).then((balance) => {
-              sequalize
-                .query(
-                  `SELECT balances.balance_id, balances.amount AS balance_amount, balances.cost AS balance_cost, coins.coin_id, 
-                  coins.code AS coin_code, coins.name AS coin_name, coins.current_price AS coin_current_price, coins.image_url AS coin_image_url, 
-                  coins.market_cap AS coin_market_cap, coins.market_cap_rank AS coin_market_cap_rank, coins.price_change_1h AS coin_price_change_1h, 
-                  coins.price_change_24h AS coin_price_change_24h, coins.price_change_7d AS coin_price_change_7d, coins.sparkline AS coin_sparkline 
-                  FROM balances INNER JOIN coins ON balances.coin_id = coins.coin_id WHERE balances.balance_id = '${balance.balance_id}'`,
-                  { type: sequalize.QueryTypes.SELECT }
-                )
+              getFullBalance(balance.balance_id)
                 .then((full_balance) => {
                   full_balance = full_balance[0]
                   if (full_balance === null) {
@@ -536,8 +528,8 @@ function getFullBalance(balance_id) {
     .query(
       `SELECT balances.balance_id, balances.amount AS balance_amount, balances.cost AS balance_cost, coins.coin_id, 
                   coins.code AS coin_code, coins.name AS coin_name, coins.current_price AS coin_current_price, coins.image_url AS coin_image_url, 
-                  coins.market_cap AS coin_market_cap, coins.market_cap_rank AS coin_market_cap_rank, coins.price_change_1h AS coin_price_change_1h, 
-                  coins.price_change_24h AS coin_price_change_24h, coins.price_change_7d AS coin_price_change_7d, coins.sparkline AS coin_sparkline 
+                  coins.market_cap AS coin_market_cap, coins.market_cap_rank AS coin_market_cap_rank, coins.price_change_prc_1h AS coin_price_change_prc_1h, 
+                  coins.price_change_prc_24h AS coin_price_change_prc_24h, coins.price_change_prc_7d AS coin_price_change_prc_7d, coins.sparkline AS coin_sparkline 
                   FROM balances INNER JOIN coins ON balances.coin_id = coins.coin_id WHERE balances.balance_id = '${balance_id}'`,
       { type: sequalize.QueryTypes.SELECT }
     )

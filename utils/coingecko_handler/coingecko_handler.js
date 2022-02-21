@@ -23,16 +23,16 @@ async function handleCoins() {
           coin_id: coin.id,
           code: coin.symbol,
           image_url: coin.image,
-          price_change_1h: coin.price_change_percentage_1h_in_currency,
-          price_change_24h: coin.price_change_percentage_24h_in_currency,
-          price_change_7d: coin.price_change_percentage_7d_in_currency,
+          price_change_prc_1h: coin.price_change_percentage_1h_in_currency,
+          price_change_prc_24h: coin.price_change_percentage_24h_in_currency,
+          price_change_prc_7d: coin.price_change_percentage_7d_in_currency,
           sparkline: JSON.stringify(coin.sparkline_in_7d.price),
           updatedAt: Date.now(),
           ...coin
         }
       })
       try {
-        await Coin.bulkCreate(data, { updateOnDuplicate: ["name", "code", "image_url", "current_price", "market_cap", "market_cap_rank", "high_24h", "low_24h", "price_change_1h", "price_change_24h", "price_change_7d", "sparkline", "updatedAt"] })
+        await Coin.bulkCreate(data, { updateOnDuplicate: ["name", "code", "image_url", "current_price", "market_cap", "market_cap_rank", "high_24h", "low_24h", "price_change_prc_1h", "price_change_prc_24h", "price_change_prc_7d", "sparkline", "updatedAt"] })
         console.log(`${data.length} coins added/updated`)
       } catch (err) {
         console.error(err)
