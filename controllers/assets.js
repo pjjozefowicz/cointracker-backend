@@ -4,51 +4,52 @@ const { validationResult } = require("express-validator/check");
 const Balance = require("../models/balances");
 const sequalize = require("../utils/database");
 
-exports.getDashboardData = (req, res, next) => {
-  const portfolio_id = req.params.portfolio_id;
-  sequalize
-    .query(
-      `SELECT balances.Coincurrency_id, cr.name, cr.code, balances.amount, balances.cost, ch.rate, ch.market_cap, ch.pln_1h_change, ch.pln_1d_change, ch.pln_7d_change, ch.image_url
-      FROM balances 
-      INNER JOIN Coincurrencies AS cr
-      ON balances.Coincurrency_id = cr.Coincurrency_id
-      INNER JOIN changes AS ch
-      ON balances.Coincurrency_id = ch.coin_name
-      WHERE balances.portfolio_id = '${portfolio_id}'`,
-      { type: sequalize.QueryTypes.SELECT }
-    )
-    .then((data) => {
-      if (data === null) {
-        return res.status(404);
-      } else {
-        return res.status(200).json(data);
-      }
-    })
-    .catch(res.status(500));
-};
+// exports.getDashboardData = (req, res, next) => {
+//   const portfolio_id = req.params.portfolio_id;
+//   sequalize
+//     .query(
+//       `SELECT balances.Coincurrency_id, cr.name, cr.code, balances.amount, balances.cost, ch.rate, ch.market_cap, ch.pln_1h_change, ch.pln_1d_change, ch.pln_7d_change, ch.image_url
+//       FROM balances 
+//       INNER JOIN Coincurrencies AS cr
+//       ON balances.Coincurrency_id = cr.Coincurrency_id
+//       INNER JOIN changes AS ch
+//       ON balances.Coincurrency_id = ch.coin_name
+//       WHERE balances.portfolio_id = '${portfolio_id}'`,
+//       { type: sequalize.QueryTypes.SELECT }
+//     )
+//     .then((data) => {
+//       if (data === null) {
+//         return res.status(404);
+//       } else {
+//         return res.status(200).json(data);
+//       }
+//     })
+//     .catch(res.status(500));
+// };
 
-exports.getCoins = (req, res, next) => {
-  Coin.findAll()
-    .then((coins) => {
+// exports.getCoins = (req, res, next) => {
+//   Coin.findAll()
+//     .then((coins) => {
+//       if (coins === null) {
+//         return res.status(500).send("No coins");
+//       } else {
+//         return res.status(200).json(coins);
+//       }
+//     })
+//     .catch(res.status(500));
+// };
+
+exports.getCoinsShort = async (req, res, next) => {
+  try {
+  const coins = await Coin.findAll({attributes: ['coin_id', 'name', 'code', 'image_url']})
       if (coins === null) {
         return res.status(500).send("No coins");
-      } else {
-        return res.status(200).json(coins);
-      }
-    })
-    .catch(res.status(500));
-};
-
-exports.getCoinsShort = (req, res, next) => {
-  Coin.findAll({attributes: ['coin_id', 'name', 'code', 'image_url']})
-    .then((coins) => {
-      if (coins === null) {
-        return res.status(500).send("No coins");
-      } else {
-        return res.status(200).json(coins);
-      }
-    })
-    .catch(res.status(500));
+      } 
+      return res.status(200).json(coins);
+    } catch (e) {
+      console.error(e)
+      return res.status(500).json({ message: "Something went wrong" })
+    }    
 };
 
 exports.getCoin = (req, res, next) => {

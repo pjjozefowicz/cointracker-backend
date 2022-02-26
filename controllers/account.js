@@ -7,28 +7,31 @@ const Cryptocurrency = require("../models/coins");
 const sequalize = require("../utils/database");
 const { port } = require("pg/lib/defaults");
 
-exports.getPortfolios = (req, res, next) => {
-  Portfolio.findAll()
-    .then((portfolios) => res.status(200).json(portfolios))
-    .catch(res.status(500));
-};
+// exports.getPortfolios = (req, res, next) => {
+//   Portfolio.findAll()
+//     .then((portfolios) => res.status(200).json(portfolios))
+//     .catch(res.status(500));
+// };
 
-exports.getPortfolio = (req, res, next) => {
+exports.getPortfolio = async (req, res, next) => {
+try {
   const portfolio_id = req.params.portfolio_id;
-  Portfolio.findByPk(portfolio_id)
-    .then((portfolio) => {
+  const portfolio = await Portfolio.findByPk(portfolio_id)
       if (portfolio === null) {
         return res.status(404);
-      } else {
-        return res.status(200).json(portfolio);
-      }
-    })
-    .catch(res.status(500));
+      } 
+      return res.status(200).json(portfolio);
+    }
+    catch (e) {
+    console.error(e)
+    return res.status(500).json({ message: "Something went wrong" })
+  }
 };
 
-exports.setPortfolioAsMain = (req, res, next) => {
+exports.setPortfolioAsMain = async (req, res, next) => {
+  try {
   const portfolio_id = req.params.portfolio_id;
-  Portfolio.update(
+  const portfolio = await Portfolio.update(
     { is_main: false },
     {
       where: {
@@ -45,27 +48,26 @@ exports.setPortfolioAsMain = (req, res, next) => {
           },
         }
       )
-        .then((portfolio) => {
           if (portfolio === null) {
             return res.status(404);
-          } else {
-            return res.status(200).json(portfolio);
-          }
+          } 
+          return res.status(200).json(portfolio);          
         })
-        .catch(res.status(500));
-    })
-    .catch(res.status(500));
+      } catch (e) {
+        console.error(e)
+        return res.status(500).json({ message: "Something went wrong" })
+      }
 };
 
-exports.getPortfoliosByUserId = (req, res, next) => {
+exports.getPortfoliosByUserId = async (req, res, next) => {
+  try {
   const owner_id = req.params.owner_id;
-  Portfolio.findAll({
+  const portfolio = await Portfolio.findAll({
     where: {
       owner_id: owner_id,
     },
   })
-    .then((portfolios) => {
-      if (portfolios === null) {
+      if (portfolio === null) {
         return res.status(404);
       } else if (portfolios.length == 0) {
         Portfolio.create({
@@ -79,33 +81,35 @@ exports.getPortfoliosByUserId = (req, res, next) => {
       else {
         return res.status(200).json(portfolios);
       }
-    })
-    .catch(res.status(500));
+    } catch (e) {
+      console.error(e)
+      return res.status(500).json({ message: "Something went wrong" })
+    }
 };
 
-exports.createPortfolio = (req, res, next) => {
+exports.createPortfolio = async (req, res, next) => {
+  try {
   const name = req.body.name;
   const owner_id = req.body.owner_id;
   const is_main = req.body.is_main;
   const errors = validationResult(req);
-
-  if (errors.isEmpty()) {
     //Check for validation errors from routes folder
-    Portfolio.create({
+    const portfolio = await Portfolio.create({
       name: name,
       owner_id: owner_id,
       is_main: is_main,
-    }).then((portfolio) =>
+    })
+    if (portfolio === null) {
+      return res.status(404) // invalid portfolio id
+    }
       res.status(201).json({
         message: "Portfolio created successfully!",
         portfolio: portfolio,
       })
-    );
-  } else {
-    return res.status(422).json({
-      message: "Invalid UUID",
-    });
-  }
+    } catch (e) {
+      console.error(e)
+      return res.status(500).json({ message: "Something went wrong" })
+    }  
 
   // if (errors.isEmpty()) {
   //   //Check for validation errors from routes folder
@@ -135,15 +139,15 @@ exports.createPortfolio = (req, res, next) => {
   // }
 };
 
-exports.deletePortfolio = (req, res, next) => {
+exports.deletePortfolio = async (req, res, next) => {
+  try {
   const portfolio_id = req.params.portfolio_id;
-  Portfolio.destroy({
+  const portfolio = await Portfolio.destroy({
     where: {
       portfolio_id: portfolio_id,
     },
   })
-    .then((deleted_count) => {
-      if (deleted_count > 0) {
+      if (portfolio > 0) {
         return res.status(200).json({
           message: "Portfolio deleted successfully!",
         });
@@ -152,14 +156,17 @@ exports.deletePortfolio = (req, res, next) => {
           message: "There is no such a portfolio",
         });
       }
-    })
-    .catch(res.status(500));
+    } catch (e) {
+      console.error(e)
+      return res.status(500).json({ message: "Something went wrong" })
+    }
 };
 
-exports.updatePortfolio = (req, res, next) => {
+exports.updatePortfolio = async (req, res, next) => {
+  try {
   const portfolio_id = req.params.portfolio_id;
   const name = req.body.name;
-  Portfolio.update(
+  const portfolio = await Portfolio.update(
     {
       name: name,
     },
@@ -169,38 +176,48 @@ exports.updatePortfolio = (req, res, next) => {
       },
     }
   )
-    .then((count) => {
-      if (count > 0) {
+      if (portfolio > 0) {
         return res.status(200).json({ message: "Portfolio updated" });
       } else {
         return res.status(404).json({ message: "There's no such portfolio" });
       }
-    })
-    .catch(res.status(500));
+    } catch (e) {
+      console.error(e)
+      return res.status(500).json({ message: "Something went wrong" })
+    }
 };
 
-exports.getBalances = (req, res, next) => {
-  Balance.findAll()
-    .then((balances) => res.status(200).json(balances))
-    .catch(res.status(500));
-};
+// exports.getBalances = async (req, res, next) => {
+//   try {
+//   const balance = await Balance.findAll()
+//     if (balance === null) {
+//       return res.status(404)
+//     }
+//     res.status(200).json(balances)
+//   } catch (e) {
+//     console.error(e)
+//     return res.status(500).json({ message: "Something went wrong" })
+//   }
+// };
 
-exports.getBalance = (req, res, next) => {
+exports.getBalance = async (req, res, next) => {
+  try {
   const balance_id = req.params.balance_id;
-  Balance.findByPk(balance_id)
-    .then((balance) => {
+  const balance = await Balance.findByPk(balance_id)
       if (balance === null) {
         return res.status(404);
-      } else {
-        return res.status(200).json(balance);
-      }
-    })
-    .catch(res.status(500));
+      } 
+      return res.status(200).json(balance);
+  } catch (e) {
+    console.error(e)
+    return res.status(500).json({ message: "Something went wrong" })
+  }
 };
 
-exports.getBalancesByPortfolioId = (req, res, next) => {
+exports.getBalancesByPortfolioId = async (req, res, next) => {
+  try {
   const portfolio_id = req.params.portfolio_id;
-  sequalize
+  const balances = await sequalize
     .query(
       `SELECT balances.balance_id, balances.amount AS balance_amount, balances.cost AS balance_cost, coins.coin_id, 
       coins.code AS coin_code, coins.name AS coin_name, coins.current_price AS coin_current_price, coins.image_url AS coin_image_url, 
@@ -209,14 +226,15 @@ exports.getBalancesByPortfolioId = (req, res, next) => {
       FROM balances INNER JOIN coins ON balances.coin_id = coins.coin_id WHERE balances.portfolio_id = '${portfolio_id}'`,
       { type: sequalize.QueryTypes.SELECT }
     )
-    .then((balances) => {
       if (balances === null) {
         return res.status(404);
       } else {
         return res.status(200).json(balances);
       }
-    })
-    .catch(res.status(500));
+    } catch (e) {
+      console.error(e)
+      return res.status(500).json({ message: "Something went wrong" })
+    }
 };
 
 exports.createBalance = (req, res, next) => {
@@ -265,31 +283,33 @@ exports.createBalance = (req, res, next) => {
   }
 };
 
-exports.deleteBalance = (req, res, next) => {
+exports.deleteBalance = async (req, res, next) => {
+  try {
   const balance_id = req.params.balance_id;
-  Balance.destroy({
+  const  deleted_count = await Balance.destroy({
     where: {
       balance_id: balance_id,
     },
   })
-    .then((deleted_count) => {
       if (deleted_count > 0) {
         return res.status(200).json({
           message: "balance deleted successfully!",
         });
-      } else {
+      } 
         return res.status(404).json({
           message: "There is no such a balance",
         });
-      }
-    })
-    .catch(res.status(500));
+      } catch (e) {
+      console.error(e)
+      return res.status(500).json({ message: "Something went wrong" })
+    }
 };
 
-exports.updateBalance = (req, res, next) => {
+exports.updateBalance = async (req, res, next) => {
+  try{
   const balance_id = req.params.balance_id;
   const amount = req.body.amount;
-  Balance.update(
+  const count = Balance.update(
     {
       amount: amount,
     },
@@ -299,21 +319,21 @@ exports.updateBalance = (req, res, next) => {
       },
     }
   )
-    .then((count) => {
       if (count > 0) {
         return res.status(200).json({ message: "Balance updated" });
-      } else {
+      } 
         return res.status(404).json({ message: "There's no such balance" });
-      }
-    })
-    .catch(res.status(500));
+  } catch (e) {
+    console.error(e)
+    return res.status(500).json({ message: "Something went wrong" })
+  }  
 };
 
-exports.getTransactions = (req, res, next) => {
-  Transaction.findAll()
-    .then((transactions) => res.status(200).json(transactions))
-    .catch(res.status(500));
-};
+// exports.getTransactions = (req, res, next) => {
+//   Transaction.findAll()
+//     .then((transactions) => res.status(200).json(transactions))
+//     .catch(res.status(500));
+// };
 
 exports.getTransaction = (req, res, next) => {
   const transaction_id = req.params.tx_id;
@@ -328,40 +348,41 @@ exports.getTransaction = (req, res, next) => {
     .catch(res.status(500));
 };
 
-exports.getTransactionsByPortfolio = (req, res, next) => {
-  const portfolio_id = req.params.portfolio_id;
-  const crypto_id = req.params.coin_id;
-  Transaction.findAll({
-    where: {
-      portfolio_id: portfolio_id,
-      base_id: crypto_id,
-    },
-  })
-    .then((transactions) => {
-      if (transactions === null) {
-        return res.status(404);
-      } else {
-        return res.status(200).json(transactions);
-      }
-    })
-    .catch(res.status(500));
-};
+// exports.getTransactionsByPortfolio = (req, res, next) => {
+//   const portfolio_id = req.params.portfolio_id;
+//   const crypto_id = req.params.coin_id;
+//   Transaction.findAll({
+//     where: {
+//       portfolio_id: portfolio_id,
+//       base_id: crypto_id,
+//     },
+//   })
+//     .then((transactions) => {
+//       if (transactions === null) {
+//         return res.status(404);
+//       } else {
+//         return res.status(200).json(transactions);
+//       }
+//     })
+//     .catch(res.status(500));
+// };
 
-exports.getTransactionsByBalance = (req, res, next) => {
+exports.getTransactionsByBalance = async (req, res, next) => {
+  try {
   const balance_id = req.params.balance_id;
-  Transaction.findAll({
+  const transactions = await Transaction.findAll({
     where: {
       balance_id: balance_id
     },
   })
-    .then((transactions) => {
       if (transactions === null) {
         return res.status(404);
-      } else {
-        return res.status(200).json(transactions);
-      }
-    })
-    .catch(res.status(500));
+      } 
+      return res.status(200).json(transactions);
+    } catch (e) {
+      console.error(e)
+      return res.status(500).json({ message: "Something went wrong" })
+    }
 };
 
 exports.createTransaction = async (req, res, next) => {
