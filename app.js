@@ -52,7 +52,7 @@ sequalize.sync()
     .then(result => {
         // console.log(result)
         console.log('success')
-        app.listen(8085);
+        app.listen(process.env.PORT || 8085);
     })
     .catch(err => {
         console.log(err)

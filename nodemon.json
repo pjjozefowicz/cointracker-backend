@@ -1,0 +1,8 @@
+{
+    "env": {
+        "POSTGRES_DB_NAME": "testing",
+        "POSTGRES_DB_USER": "alice",
+        "POSTGRES_DB_PASSW": "1234",
+        "PORT": "8085"
+    }
+}
