@@ -2,6 +2,7 @@ const { Op } = require('sequelize');
 const express = require('express');
 const cron = require('node-cron');
 const bodyParser = require('body-parser');
+const helmet = require("helmet");
 
 const checkJwt = require('./auth/jwt_auth')
 const sequalize = require('./utils/database')
@@ -23,6 +24,8 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     next();
 });
+
+app.use(helmet())
 
 app.use(checkJwt)
 
