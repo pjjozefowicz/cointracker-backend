@@ -3,6 +3,9 @@ const express = require('express');
 const cron = require('node-cron');
 const bodyParser = require('body-parser');
 const helmet = require("helmet");
+const morgan = require("morgan");
+const fs = require("fs");
+const path = require('path');
 
 const checkJwt = require('./auth/jwt_auth')
 const sequalize = require('./utils/database')
@@ -25,7 +28,10 @@ app.use((req, res, next) => {
     next();
 });
 
+const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
+
 app.use(helmet())
+app.use(morgan('combined', {stream: accessLogStream} ));
 
 app.use(checkJwt)
 
