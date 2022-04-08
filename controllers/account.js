@@ -265,25 +265,30 @@ exports.createBalance = (req, res, next) => {
   }
 };
 
-exports.deleteBalance = (req, res, next) => {
+exports.deleteBalance = async (req, res, next) => {
   const balance_id = req.params.balance_id;
-  Balance.destroy({
-    where: {
-      balance_id: balance_id,
-    },
-  })
-    .then((deleted_count) => {
-      if (deleted_count > 0) {
-        return res.status(200).json({
-          message: "balance deleted successfully!",
-        });
-      } else {
-        return res.status(404).json({
-          message: "There is no such a balance",
-        });
-      }
+  try {
+    full_balance = await getFullBalance(balance_id)
+    await Balance.destroy({
+      where: {
+        balance_id: balance_id,
+      },
     })
-    .catch(res.status(500));
+    await Transaction.destroy({
+      where: {
+        balance_id: balance_id,
+      },
+    })
+    return res.status(200).json({
+      message: "Balance deleted successfully!",
+      balance: full_balance[0]
+    });
+  } catch (e) {
+    console.error(e)
+    return res.status(500).json({
+      message: "Something went wrong",
+    });
+  }
 };
 
 exports.updateBalance = (req, res, next) => {
