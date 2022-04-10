@@ -3,14 +3,14 @@ const router = express.Router();
 const accountController = require('../controllers/account');
 const { check } = require('express-validator/check');
 
-// GET /account/transactions
-router.get('/transactions', accountController.getTransactions);
+// // GET /account/transactions
+// router.get('/transactions', accountController.getTransactions);
+
+// // GET /account/transaction/:tx_id
+// router.get('/transaction/:tx_id', accountController.getTransaction);
 
 // GET /account/transaction/:tx_id
-router.get('/transaction/:tx_id', accountController.getTransaction);
-
-// GET /account/transaction/:tx_id
-router.get('/transactions-by-portfolio/:portfolio_id/:cryptocurrency_id', accountController.getTransactionsByPortfolio);
+// router.get('/transactions-by-portfolio/:portfolio_id/:cryptocurrency_id', accountController.getTransactionsByPortfolio);
 
 // GET /account/transaction/:tx_id
 router.get('/transactions-by-balance/:balance_id', accountController.getTransactionsByBalance);
@@ -55,11 +55,11 @@ router.delete('/transaction/:tx_id', accountController.deleteTransaction);
 // UPDATE /account/transaction/tx_id
 router.put('/transaction/:tx_id', accountController.updateTransaction);
 
-// GET /account/portfolios
-router.get('/portfolios', accountController.getPortfolios);
+// // GET /account/portfolios
+// router.get('/portfolios', accountController.getPortfolios);
 
-// GET /account/portfolio/:portfolio_id
-router.get('/portfolio/:portfolio_id', accountController.getPortfolio);
+// // GET /account/portfolio/:portfolio_id
+// router.get('/portfolio/:portfolio_id', accountController.getPortfolio);
 
 router.get('/portfolios-by-owner/:owner_id', accountController.getPortfoliosByUserId);
 
@@ -86,11 +86,11 @@ router.delete('/portfolio/:portfolio_id', accountController.deletePortfolio);
 // UPDATE /account/portfolio/:portfolio_id
 router.put('/portfolio/:portfolio_id', accountController.updatePortfolio);
 
-// GET /account/balances
-router.get('/balances', accountController.getBalances);
+// // GET /account/balances
+// router.get('/balances', accountController.getBalances);
 
-// GET /account/balance/:balance_id
-router.get('/balance/:balance_id', accountController.getBalance);
+// // GET /account/balance/:balance_id
+// router.get('/balance/:balance_id', accountController.getBalance);
 
 // GET /account/balances-by-portfolio/:portfolio_id
 router.get('/balances-by-portfolio/:portfolio_id', accountController.getBalancesByPortfolioId);
