@@ -6,6 +6,18 @@ const { validationResult } = require("express-validator/check");
 const Cryptocurrency = require("../models/coins");
 const sequalize = require("../utils/database");
 const { port } = require("pg/lib/defaults");
+const jwt_decode = require('jwt-decode');
+
+function getTokenOwner(req) {
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.split(" ")[0] === "Bearer"
+  ) {
+    return jwt_decode(req.headers.authorization.split(" ")[1]).sub;
+  } 
+  return null;
+}
+
 
 // exports.getPortfolios = (req, res, next) => {
 //   Portfolio.findAll()
@@ -29,12 +41,14 @@ const { port } = require("pg/lib/defaults");
 // check if user_id in the token fits to the owner of this portfolio, edit only portfolio owned by user id from token ***
 exports.setPortfolioAsMain = async (req, res, next) => {
   const portfolio_id = req.params.portfolio_id;
+  const owner_id = getTokenOwner(req)
   try {
     await Portfolio.update(
-      { is_main: false },
+      { is_main: false,   },
       {
         where: {
           is_main: true,
+          owner_id: owner_id
         },
       }
     )
@@ -43,6 +57,7 @@ exports.setPortfolioAsMain = async (req, res, next) => {
       {
         where: {
           portfolio_id: portfolio_id,
+          owner_id: owner_id
         },
       }
     )
@@ -61,7 +76,7 @@ exports.setPortfolioAsMain = async (req, res, next) => {
 
 // check if user_id in the token fits to the owner_id in params
 exports.getPortfoliosByUserId = (req, res, next) => {
-  const owner_id = req.params.owner_id;
+  const owner_id = getTokenOwner(req)
   Portfolio.findAll({
     where: {
       owner_id: owner_id,
@@ -89,7 +104,7 @@ exports.getPortfoliosByUserId = (req, res, next) => {
 // we don't really need to pass owner_id here, just take user_id from token
 exports.createPortfolio = (req, res, next) => {
   const name = req.body.name;
-  const owner_id = req.body.owner_id;
+  const owner_id = getTokenOwner(req);
   const is_main = req.body.is_main;
   const errors = validationResult(req);
 
@@ -142,9 +157,12 @@ exports.createPortfolio = (req, res, next) => {
 // check if user_id in the token fits to the owner of this portfolio
 exports.deletePortfolio = (req, res, next) => {
   const portfolio_id = req.params.portfolio_id;
+  const owner_id = getTokenOwner(req);
   Portfolio.destroy({
     where: {
       portfolio_id: portfolio_id,
+      owner_id: owner_id
+
     },
   })
     .then((deleted_count) => {
@@ -164,6 +182,7 @@ exports.deletePortfolio = (req, res, next) => {
 // check if user_id in the token fits to the owner of this portfolio
 exports.updatePortfolio = (req, res, next) => {
   const portfolio_id = req.params.portfolio_id;
+  const owner_id = getTokenOwner(req);
   const name = req.body.name;
   Portfolio.update(
     {
@@ -172,6 +191,7 @@ exports.updatePortfolio = (req, res, next) => {
     {
       where: {
         portfolio_id: portfolio_id,
+        owner_id: owner_id
       },
     }
   )
@@ -185,24 +205,24 @@ exports.updatePortfolio = (req, res, next) => {
     .catch(res.status(500));
 };
 
-// exports.getBalances = (req, res, next) => {
-//   Balance.findAll()
-//     .then((balances) => res.status(200).json(balances))
-//     .catch(res.status(500));
-// };
+exports.getBalances = (req, res, next) => {
+  Balance.findAll()
+    .then((balances) => res.status(200).json(balances))
+    .catch(res.status(500));
+};
 
-// exports.getBalance = (req, res, next) => {
-//   const balance_id = req.params.balance_id;
-//   Balance.findByPk(balance_id)
-//     .then((balance) => {
-//       if (balance === null) {
-//         return res.status(404);
-//       } else {
-//         return res.status(200).json(balance);
-//       }
-//     })
-//     .catch(res.status(500));
-// };
+exports.getBalance = (req, res, next) => {
+  const balance_id = req.params.balance_id;
+  Balance.findByPk(balance_id)
+    .then((balance) => {
+      if (balance === null) {
+        return res.status(404);
+      } else {
+        return res.status(200).json(balance);
+      }
+    })
+    .catch(res.status(500));
+};
 
 // check if user_id in the token fits to the owner of this portfolio
 exports.getBalancesByPortfolioId = (req, res, next) => {
@@ -231,7 +251,9 @@ exports.createBalance = (req, res, next) => {
   const portfolio_id = req.body.portfolio_id;
   const coin_id = req.body.coin_id;
   const errors = validationResult(req);
+  const owner_id = getTokenOwner(req)
   if (errors.isEmpty()) {
+    if (owner_id === sequalize.query(`SELECT owner_id FROM portfolios where portfolio_id = '${portfolio_id}'`), { type: sequalize.QueryTypes.SELECT }){ 
     Portfolio.findByPk(portfolio_id).then((portfolio) => {
       if (portfolio === null) {
         return res.status(422).json({
@@ -266,6 +288,7 @@ exports.createBalance = (req, res, next) => {
         });
       }
     });
+  }
   } else {
     return res.status(422).json({
       message: "Parameters are not correct",
@@ -273,10 +296,16 @@ exports.createBalance = (req, res, next) => {
   }
 };
 
+
+
 // check if user_id in the token fits to the owner of this balance (portfolio)
 exports.deleteBalance = async (req, res, next) => {
   const balance_id = req.params.balance_id;
+  const owner_id = getTokenOwner(req)
   try {
+    if (owner_id === sequalize.query(
+      `SELECT owner_id FROM portfolios INNER JOIN balances ON portfolios.portfolio_id 
+      = balances.portfolio_id WHERE balances.balance_id = '${balance_id}'`),{ type: sequalize.QueryTypes.SELECT }){
     full_balance = await getFullBalance(balance_id)
     await Balance.destroy({
       where: {
@@ -292,6 +321,11 @@ exports.deleteBalance = async (req, res, next) => {
       message: "Balance deleted successfully!",
       balance: full_balance[0]
     });
+  } else {
+    return res.status(500).json({
+      message: "Something went wrong",
+    });
+  }  
   } catch (e) {
     console.error(e)
     return res.status(500).json({
@@ -304,6 +338,10 @@ exports.deleteBalance = async (req, res, next) => {
 exports.updateBalance = (req, res, next) => {
   const balance_id = req.params.balance_id;
   const amount = req.body.amount;
+  const owner_id = getTokenOwner(req)
+  if (owner_id === sequalize.query(
+    `SELECT owner_id FROM portfolios INNER JOIN balances ON portfolios.portfolio_id 
+    = balances.portfolio_id WHERE balances.balance_id = '${balance_id}'`), { type: sequalize.QueryTypes.SELECT }){
   Balance.update(
     {
       amount: amount,
@@ -322,6 +360,11 @@ exports.updateBalance = (req, res, next) => {
       }
     })
     .catch(res.status(500));
+  } else {
+    return res.status(500).json({
+      message: "Something went wrong",
+    });
+  }
 };
 
 // exports.getTransactions = (req, res, next) => {
@@ -365,6 +408,11 @@ exports.updateBalance = (req, res, next) => {
 // check if user_id in the token fits to the owner of this balance (portfolio)
 exports.getTransactionsByBalance = (req, res, next) => {
   const balance_id = req.params.balance_id;
+  const owner_id = getTokenOwner(req)
+
+  if (owner_id === sequalize.query(
+    `SELECT owner_id FROM portfolios INNER JOIN balances ON portfolios.portfolio_id 
+    = balances.portfolio_id WHERE balances.balance_id = '${balance_id}'`), { type: sequalize.QueryTypes.SELECT }){
   Transaction.findAll({
     where: {
       balance_id: balance_id
@@ -378,6 +426,11 @@ exports.getTransactionsByBalance = (req, res, next) => {
       }
     })
     .catch(res.status(500));
+  } else {
+    return res.status(500).json({
+      message: "Something went wrong",
+    });
+  }
 };
 
 // check if user_id in the token fits to the owner of this balance (portfolio)
@@ -394,7 +447,10 @@ exports.createTransaction = async (req, res, next) => {
   const note = req.body.note;
   const balance_id = req.body.balance_id;
   const errors = validationResult(req);
-  if (errors.isEmpty()) {
+  const owner_id = getTokenOwner(req)
+  if (errors.isEmpty() && owner_id === sequalize.query(
+    `SELECT owner_id FROM portfolios INNER JOIN balances ON portfolios.portfolio_id 
+    = balances.portfolio_id WHERE balances.balance_id = '${balance_id}'`), { type: sequalize.QueryTypes.SELECT }) {
     try {
       const balance = await Balance.findByPk(balance_id)
       if (balance === null) {
@@ -459,6 +515,10 @@ exports.updateTransaction = async (req, res, next) => {
   const fee = req.body.fee;
   const note = req.body.note;
   const balance_id = req.body.balance_id;
+  const owner_id = getTokenOwner(req)
+  if (owner_id === sequalize.query(
+    `SELECT owner_id FROM portfolios INNER JOIN balances ON portfolios.portfolio_id 
+    = balances.portfolio_id WHERE balances.balance_id = '${balance_id}'`), { type: sequalize.QueryTypes.SELECT }){
   try {
     const tx = await Transaction.findByPk(transaction_id)
     const balance = await Balance.findByPk(balance_id)
@@ -503,19 +563,28 @@ exports.updateTransaction = async (req, res, next) => {
     console.error(e)
     return res.status(500).json({ message: "Something went wrong" })
   }
+  } else {
+  return res.status(500).json({
+    message: "Something went wrong",
+  });
 };
+}
 
 // check if user_id in the token fits to the owner of this balance (portfolio)
 exports.deleteTransaction = async (req, res, next) => {
   const transaction_id = req.params.tx_id;
+  const owner_id = getTokenOwner(req)
   try {
     const tx = await Transaction.findByPk(transaction_id)
     const balance = await Balance.findByPk(tx.balance_id)
+    if (owner_id === sequalize.query(
+      `SELECT owner_id FROM portfolios INNER JOIN balances ON portfolios.portfolio_id 
+      = balances.portfolio_id WHERE balances.balance_id = ${tx.balance_id}`), { type: sequalize.QueryTypes.SELECT }){
     if (tx === null) {
       return res.status(400).json({ message: "Transaction invalid" })
     } else if (balance === null) {
       return res.status(400).json({ message: "Balance invalid" })
-    }
+    } 
     if (tx.type.toLowerCase() == "buy") {
       balance.set({
         amount: Number(balance.amount) - Number(tx.amount),
@@ -536,11 +605,14 @@ exports.deleteTransaction = async (req, res, next) => {
       transaction: tx,
       balance: full_balance[0]
     })
+  }
   } catch (e) {
     console.error(e)
     return res.status(500).json({ message: "Something went wrong" })
   }
 }
+
+
 
 // that's helper function
 function getFullBalance(balance_id) {

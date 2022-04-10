@@ -4,15 +4,17 @@ const { check } = require('express-validator/check');
 
 const assetsController = require('../controllers/assets');
 
+
+
 //We will only use this one actually
 //GET /assets/coins
-// router.get('/coins/', assetsController.getCoins);
+router.get('/coins/', assetsController.getCoins);
 
 //GET /assets/coins-short
 router.get('/coins-short/', assetsController.getCoinsShort);
 
 // GET /assets/coin/:coin_id
-// router.get('/coin/', assetsController.getCoin);
+router.get('/coin/', assetsController.getCoin);
 
 // POST /assets/coin
 // router.post('/coin', [
