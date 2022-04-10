@@ -7,56 +7,59 @@ const Cryptocurrency = require("../models/coins");
 const sequalize = require("../utils/database");
 const { port } = require("pg/lib/defaults");
 
-exports.getPortfolios = (req, res, next) => {
-  Portfolio.findAll()
-    .then((portfolios) => res.status(200).json(portfolios))
-    .catch(res.status(500));
-};
+// exports.getPortfolios = (req, res, next) => {
+//   Portfolio.findAll()
+//     .then((portfolios) => res.status(200).json(portfolios))
+//     .catch(res.status(500));
+// };
 
-exports.getPortfolio = (req, res, next) => {
+// exports.getPortfolio = (req, res, next) => {
+//   const portfolio_id = req.params.portfolio_id;
+//   Portfolio.findByPk(portfolio_id)
+//     .then((portfolio) => {
+//       if (portfolio === null) {
+//         return res.status(404);
+//       } else {
+//         return res.status(200).json(portfolio);
+//       }
+//     })
+//     .catch(res.status(500));
+// };
+
+// check if user_id in the token fits to the owner of this portfolio, edit only portfolio owned by user id from token ***
+exports.setPortfolioAsMain = async (req, res, next) => {
   const portfolio_id = req.params.portfolio_id;
-  Portfolio.findByPk(portfolio_id)
-    .then((portfolio) => {
-      if (portfolio === null) {
-        return res.status(404);
-      } else {
-        return res.status(200).json(portfolio);
+  try {
+    await Portfolio.update(
+      { is_main: false },
+      {
+        where: {
+          is_main: true,
+        },
       }
-    })
-    .catch(res.status(500));
-};
-
-exports.setPortfolioAsMain = (req, res, next) => {
-  const portfolio_id = req.params.portfolio_id;
-  Portfolio.update(
-    { is_main: false },
-    {
-      where: {
-        is_main: true,
-      },
+    )
+    const portfolio = await Portfolio.update(
+      { is_main: true },
+      {
+        where: {
+          portfolio_id: portfolio_id,
+        },
+      }
+    )
+    if (portfolio === null) {
+      return res.status(404).json({
+        message: "There is no such a portfolio",
+      })
+    } else {
+      return res.status(200).json(portfolio);
     }
-  )
-    .then((_) => {
-      Portfolio.update(
-        { is_main: true },
-        {
-          where: {
-            portfolio_id: portfolio_id,
-          },
-        }
-      )
-        .then((portfolio) => {
-          if (portfolio === null) {
-            return res.status(404);
-          } else {
-            return res.status(200).json(portfolio);
-          }
-        })
-        .catch(res.status(500));
-    })
-    .catch(res.status(500));
+  } catch (e) {
+    console.error(e)
+    return res.status(500).json({ message: "Something went wrong" })
+  }
 };
 
+// check if user_id in the token fits to the owner_id in params
 exports.getPortfoliosByUserId = (req, res, next) => {
   const owner_id = req.params.owner_id;
   Portfolio.findAll({
@@ -83,6 +86,7 @@ exports.getPortfoliosByUserId = (req, res, next) => {
     .catch(res.status(500));
 };
 
+// we don't really need to pass owner_id here, just take user_id from token
 exports.createPortfolio = (req, res, next) => {
   const name = req.body.name;
   const owner_id = req.body.owner_id;
@@ -135,6 +139,7 @@ exports.createPortfolio = (req, res, next) => {
   // }
 };
 
+// check if user_id in the token fits to the owner of this portfolio
 exports.deletePortfolio = (req, res, next) => {
   const portfolio_id = req.params.portfolio_id;
   Portfolio.destroy({
@@ -156,6 +161,7 @@ exports.deletePortfolio = (req, res, next) => {
     .catch(res.status(500));
 };
 
+// check if user_id in the token fits to the owner of this portfolio
 exports.updatePortfolio = (req, res, next) => {
   const portfolio_id = req.params.portfolio_id;
   const name = req.body.name;
@@ -179,25 +185,26 @@ exports.updatePortfolio = (req, res, next) => {
     .catch(res.status(500));
 };
 
-exports.getBalances = (req, res, next) => {
-  Balance.findAll()
-    .then((balances) => res.status(200).json(balances))
-    .catch(res.status(500));
-};
+// exports.getBalances = (req, res, next) => {
+//   Balance.findAll()
+//     .then((balances) => res.status(200).json(balances))
+//     .catch(res.status(500));
+// };
 
-exports.getBalance = (req, res, next) => {
-  const balance_id = req.params.balance_id;
-  Balance.findByPk(balance_id)
-    .then((balance) => {
-      if (balance === null) {
-        return res.status(404);
-      } else {
-        return res.status(200).json(balance);
-      }
-    })
-    .catch(res.status(500));
-};
+// exports.getBalance = (req, res, next) => {
+//   const balance_id = req.params.balance_id;
+//   Balance.findByPk(balance_id)
+//     .then((balance) => {
+//       if (balance === null) {
+//         return res.status(404);
+//       } else {
+//         return res.status(200).json(balance);
+//       }
+//     })
+//     .catch(res.status(500));
+// };
 
+// check if user_id in the token fits to the owner of this portfolio
 exports.getBalancesByPortfolioId = (req, res, next) => {
   const portfolio_id = req.params.portfolio_id;
   sequalize
@@ -219,6 +226,7 @@ exports.getBalancesByPortfolioId = (req, res, next) => {
     .catch(res.status(500));
 };
 
+// check if user_id in the token fits to the owner of this portfolio
 exports.createBalance = (req, res, next) => {
   const portfolio_id = req.body.portfolio_id;
   const coin_id = req.body.coin_id;
@@ -265,6 +273,7 @@ exports.createBalance = (req, res, next) => {
   }
 };
 
+// check if user_id in the token fits to the owner of this balance (portfolio)
 exports.deleteBalance = async (req, res, next) => {
   const balance_id = req.params.balance_id;
   try {
@@ -291,6 +300,7 @@ exports.deleteBalance = async (req, res, next) => {
   }
 };
 
+// check if user_id in the token fits to the owner of this balance (portfolio)
 exports.updateBalance = (req, res, next) => {
   const balance_id = req.params.balance_id;
   const amount = req.body.amount;
@@ -314,44 +324,45 @@ exports.updateBalance = (req, res, next) => {
     .catch(res.status(500));
 };
 
-exports.getTransactions = (req, res, next) => {
-  Transaction.findAll()
-    .then((transactions) => res.status(200).json(transactions))
-    .catch(res.status(500));
-};
+// exports.getTransactions = (req, res, next) => {
+//   Transaction.findAll()
+//     .then((transactions) => res.status(200).json(transactions))
+//     .catch(res.status(500));
+// };
 
-exports.getTransaction = (req, res, next) => {
-  const transaction_id = req.params.tx_id;
-  Transaction.findByPk(transaction_id)
-    .then((transaction) => {
-      if (transaction === null) {
-        return res.status(404);
-      } else {
-        return res.status(200).json(transaction);
-      }
-    })
-    .catch(res.status(500));
-};
+// exports.getTransaction = (req, res, next) => {
+//   const transaction_id = req.params.tx_id;
+//   Transaction.findByPk(transaction_id)
+//     .then((transaction) => {
+//       if (transaction === null) {
+//         return res.status(404);
+//       } else {
+//         return res.status(200).json(transaction);
+//       }
+//     })
+//     .catch(res.status(500));
+// };
 
-exports.getTransactionsByPortfolio = (req, res, next) => {
-  const portfolio_id = req.params.portfolio_id;
-  const crypto_id = req.params.coin_id;
-  Transaction.findAll({
-    where: {
-      portfolio_id: portfolio_id,
-      base_id: crypto_id,
-    },
-  })
-    .then((transactions) => {
-      if (transactions === null) {
-        return res.status(404);
-      } else {
-        return res.status(200).json(transactions);
-      }
-    })
-    .catch(res.status(500));
-};
+// exports.getTransactionsByPortfolio = (req, res, next) => {
+//   const portfolio_id = req.params.portfolio_id;
+//   const crypto_id = req.params.coin_id;
+//   Transaction.findAll({
+//     where: {
+//       portfolio_id: portfolio_id,
+//       base_id: crypto_id,
+//     },
+//   })
+//     .then((transactions) => {
+//       if (transactions === null) {
+//         return res.status(404);
+//       } else {
+//         return res.status(200).json(transactions);
+//       }
+//     })
+//     .catch(res.status(500));
+// };
 
+// check if user_id in the token fits to the owner of this balance (portfolio)
 exports.getTransactionsByBalance = (req, res, next) => {
   const balance_id = req.params.balance_id;
   Transaction.findAll({
@@ -369,6 +380,7 @@ exports.getTransactionsByBalance = (req, res, next) => {
     .catch(res.status(500));
 };
 
+// check if user_id in the token fits to the owner of this balance (portfolio)
 exports.createTransaction = async (req, res, next) => {
   console.log(req.body)
   const rate = req.body.rate;
@@ -434,6 +446,7 @@ exports.createTransaction = async (req, res, next) => {
   }
 };
 
+// check if user_id in the token fits to the owner of this balance (portfolio)
 exports.updateTransaction = async (req, res, next) => {
   const transaction_id = req.params.tx_id;
   const rate = req.body.rate;
@@ -492,6 +505,7 @@ exports.updateTransaction = async (req, res, next) => {
   }
 };
 
+// check if user_id in the token fits to the owner of this balance (portfolio)
 exports.deleteTransaction = async (req, res, next) => {
   const transaction_id = req.params.tx_id;
   try {
@@ -528,6 +542,7 @@ exports.deleteTransaction = async (req, res, next) => {
   }
 }
 
+// that's helper function
 function getFullBalance(balance_id) {
   return sequalize
     .query(
