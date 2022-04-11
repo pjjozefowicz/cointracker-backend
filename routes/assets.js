@@ -1,10 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { check } = require('express-validator/check');
 
 const assetsController = require('../controllers/assets');
 
-//We will only use this one actually
 //GET /assets/coins
 // router.get('/coins/', assetsController.getCoins);
 
