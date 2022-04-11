@@ -5,28 +5,17 @@ const Balance = require("../models/balances");
 const sequalize = require("../utils/database");
 const jwt_decode = require('jwt-decode');
 
-function getTokenOwner(req) {
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.split(" ")[0] === "Bearer"
-  ) {
-    return jwt_decode(req.headers.authorization.split(" ")[1]).sub;
-  } 
-  return null;
-}
-
-
-exports.getCoins = async (req, res, next) => {
-  try {
-    coins = await Coin.findAll()
-    return res.status(200).json(coins);
-  } catch (e) {
-    console.error(e)
-    return res.status(500).json({
-      message: "Something went wrong",
-    });
-  }
-}
+// exports.getCoins = async (req, res, next) => {
+//   try {
+//     coins = await Coin.findAll()
+//     return res.status(200).json(coins);
+//   } catch (e) {
+//     console.error(e)
+//     return res.status(500).json({
+//       message: "Something went wrong",
+//     });
+//   }
+// }
 
 exports.getCoinsShort = async (req, res, next) => {
   try {
@@ -56,18 +45,18 @@ exports.getCoinsShort = async (req, res, next) => {
 
 
 
-exports.getCoin = (req, res, next) => {
-  const coin_id = req.params.coin_id;
-  Coin.findByPk(coin_id)
-    .then((coin) => {
-      if (coin === null) {
-        return res.status(404);
-      } else {
-        return res.status(200).json(coin);
-      }
-    })
-    .catch(res.status(500));
-};
+// exports.getCoin = (req, res, next) => {
+//   const coin_id = req.params.coin_id;
+//   Coin.findByPk(coin_id)
+//     .then((coin) => {
+//       if (coin === null) {
+//         return res.status(404);
+//       } else {
+//         return res.status(200).json(coin);
+//       }
+//     })
+//     .catch(res.status(500));
+// };
 
 // exports.createCoin = (req, res, next) => {
 //   const name = req.body.name;

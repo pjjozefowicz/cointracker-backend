@@ -87,10 +87,10 @@ router.delete('/portfolio/:portfolio_id', accountController.deletePortfolio);
 router.put('/portfolio/:portfolio_id', accountController.updatePortfolio);
 
 // // GET /account/balances
-router.get('/balances', accountController.getBalances);
+// router.get('/balances', accountController.getBalances);
 
-// // GET /account/balance/:balance_id
-router.get('/balance/:balance_id', accountController.getBalance);
+// // // GET /account/balance/:balance_id
+// router.get('/balance/:balance_id', accountController.getBalance);
 
 // GET /account/balances-by-portfolio/:portfolio_id
 router.get('/balances-by-portfolio/:portfolio_id', accountController.getBalancesByPortfolioId);
@@ -109,7 +109,7 @@ router.post('/balance',[
 // DELETE /account/balance/:balance_id
 router.delete('/balance/:balance_id', accountController.deleteBalance);
 
-// UPDATE /account/balance/:balance_id
-router.put('/balance/:balance_id', accountController.updateBalance);
+// // UPDATE /account/balance/:balance_id
+// router.put('/balance/:balance_id', accountController.updateBalance);
 
 module.exports = router;
