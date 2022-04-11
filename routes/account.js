@@ -87,10 +87,10 @@ router.delete('/portfolio/:portfolio_id', accountController.deletePortfolio);
 router.put('/portfolio/:portfolio_id', accountController.updatePortfolio);
 
 // // GET /account/balances
-// router.get('/balances', accountController.getBalances);
+router.get('/balances', accountController.getBalances);
 
 // // GET /account/balance/:balance_id
-// router.get('/balance/:balance_id', accountController.getBalance);
+router.get('/balance/:balance_id', accountController.getBalance);
 
 // GET /account/balances-by-portfolio/:portfolio_id
 router.get('/balances-by-portfolio/:portfolio_id', accountController.getBalancesByPortfolioId);
