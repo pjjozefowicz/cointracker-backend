@@ -1,4 +1,3 @@
-const { Op } = require('sequelize');
 const express = require('express');
 const cron = require('node-cron');
 const bodyParser = require('body-parser');
@@ -18,6 +17,7 @@ const Transaction = require('./models/transactions')
 const coingecko_handler = require('./utils/coingecko_handler/coingecko_handler')
 
 const app = express();
+
 // app.use(bodyParser.urlencoded()); // x-www-form-urlencoded <form>
 app.use(bodyParser.json()); // application/json
 
@@ -31,17 +31,11 @@ app.use((req, res, next) => {
 const accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
 
 app.use(helmet())
-app.use(morgan('combined', {stream: accessLogStream} ));
+app.use(morgan('combined', { stream: accessLogStream }));
 
 app.use(checkJwt)
 
 app.use('/account', accountRoutes);
-// app.use('/admin', adminRoutes);
-// app.use('/assets/:id', checkJwt, assetsRoutes => {
-//     const id = Number(req.params.id)
-//     const event = events.find(event => event.id ===id);
-//     res.send(event);
-// });
 app.use('/assets/', assetsRoutes);
 
 app.use(function (err, req, res, next) {
@@ -53,20 +47,18 @@ app.use(function (err, req, res, next) {
     }
 });
 
-// app.use('/')
+sync_db()
 
-//sequalize.drop() 
-//sequalize.sync() // Need to declare const XXXX = require('./models/...') to work
-sequalize.sync()
-    .then(result => {
-        // console.log(result)
-        console.log('success')
-        app.listen(process.env.PORT || 8085);
-    })
-    .catch(err => {
+async function sync_db() {
+    try {
+        await sequalize.sync()
+        console.log("Database synchronized successfully")
+        coingecko_handler.handle_coins()
+        cron.schedule('* * * * *', () => {
+            coingecko_handler.handle_coins()
+        });
+        app.listen(process.env.PORT);
+    } catch {
         console.log(err)
-    })
-
-cron.schedule('* * * * *', () => {
-    coingecko_handler.handle_coins()
-});
+    }
+}
