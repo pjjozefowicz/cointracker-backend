@@ -26,8 +26,7 @@ Portfolio.hasMany(Balance, {
     foreignKey: {
         name: 'portfolio_id',
         allowNull: false,
-    },
-    onDelete: 'cascade'
+    }
 })
 
 module.exports = Portfolio

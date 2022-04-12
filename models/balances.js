@@ -32,8 +32,7 @@ Balance.hasMany(Transaction, {
     foreignKey: {
         name: 'balance_id',
         allowNull: false,
-    },
-    onDelete: 'cascade'
+    }
 })
 
 module.exports = Balance
