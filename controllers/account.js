@@ -100,7 +100,7 @@ exports.setPortfolioAsMain = async (req, res, next) => {
 exports.getPortfoliosByUserId = async (req, res, next) => {
   const owner_id = getTokenOwner(req)
   try {
-    const portfolios = Portfolio.findAll({
+    const portfolios = await Portfolio.findAll({
       where: {
         owner_id: owner_id,
       },
@@ -108,12 +108,12 @@ exports.getPortfoliosByUserId = async (req, res, next) => {
     if (portfolios === null) {
       return res.status(404);
     } else if (portfolios.length == 0) {
-      const portfolio = Portfolio.create({
+      const portfolio = await Portfolio.create({
         name: 'Your portfolio',
         owner_id: owner_id,
         is_main: true,
       })
-      res.status(200).json([portfolio])
+      return res.status(200).json([portfolio])
     }
     else {
       return res.status(200).json(portfolios);
@@ -133,7 +133,8 @@ exports.createPortfolio = async (req, res, next) => {
       //Check for validation errors from routes folder
       const portfolio = await Portfolio.create({
         name: name,
-        owner_id: owner_id
+        owner_id: owner_id,
+        is_main: false
       })
       res.status(201).json({
         message: "Portfolio created successfully!",
@@ -154,21 +155,37 @@ exports.deletePortfolio = async (req, res, next) => {
   const portfolio_id = req.params.portfolio_id;
   const owner_id = getTokenOwner(req);
   try {
-    const deleted_count = await Portfolio.destroy({
+    const portfolio = await Portfolio.findOne({
       where: {
         portfolio_id: portfolio_id,
         owner_id: owner_id
-      },
+      }
     })
-    if (deleted_count > 0) {
-      return res.status(200).json({
-        message: "Portfolio deleted successfully!",
-      })
-    } else {
+    if (portfolio === null) {
       return res.status(404).json({
-        message: "There is no such a portfolio",
+        message: "Portfolio doesn't exist",
       })
     }
+    const balances = await Balance.findAll({
+      where: {
+        portfolio_id: portfolio.portfolio_id
+      }
+    })
+    balance_ids = balances.map(b => b.balance_id)
+    await Transaction.destroy({
+      where: {
+        balance_id: balance_ids
+      }
+    })
+    await Balance.destroy({
+      where: {
+        portfolio_id: portfolio.portfolio_id,
+      },
+    })
+    await portfolio.destroy()
+    return res.status(200).json({
+      message: "Portfolio deleted successfully!",
+    })
   } catch (e) {
     console.error(e)
     return res.status(500).json({ message: "Something went wrong" })
@@ -179,22 +196,29 @@ exports.updatePortfolio = async (req, res, next) => {
   const portfolio_id = req.params.portfolio_id;
   const owner_id = getTokenOwner(req);
   const name = req.body.name;
+  const errors = validationResult(req);
   try {
-    const count = Portfolio.update(
-      {
-        name: name,
-      },
-      {
-        where: {
-          portfolio_id: portfolio_id,
-          owner_id: owner_id
+    if (errors.isEmpty()) {
+      const count = await Portfolio.update(
+        {
+          name: name,
         },
+        {
+          where: {
+            portfolio_id: portfolio_id,
+            owner_id: owner_id
+          },
+        }
+      )
+      if (count > 0) {
+        return res.status(200).json({ message: "Portfolio updated" });
+      } else {
+        return res.status(404).json({ message: "There's no such portfolio" });
       }
-    )
-    if (count > 0) {
-      return res.status(200).json({ message: "Portfolio updated" });
     } else {
-      return res.status(404).json({ message: "There's no such portfolio" });
+      return res.status(422).json({
+        message: "Invalid data",
+      });
     }
   } catch (e) {
     console.error(e)
@@ -291,8 +315,7 @@ exports.createBalance = async (req, res, next) => {
           if (full_balance === null) {
             return res.status(404);
           } else {
-            full_balance = full_balance[0]
-            return res.status(201).json(full_balance);
+            return res.status(201).json(full_balance[0]);
           }
         }
       }
@@ -322,12 +345,11 @@ exports.deleteBalance = async (req, res, next) => {
     }
     const full_balance = await getFullBalance(balance_id)
     await balance.destroy()
-    // do I need it?
-    // await Transaction.destroy({
-    //   where: {
-    //     balance_id: balance_id,
-    //   },
-    // })
+    await Transaction.destroy({
+      where: {
+        balance_id: balance_id,
+      },
+    })
     return res.status(200).json({
       message: "Balance deleted successfully!",
       balance: full_balance[0]
@@ -434,7 +456,6 @@ exports.getTransactionsByBalance = async (req, res, next) => {
 
 // check if user_id in the token fits to the owner of this balance (portfolio)
 exports.createTransaction = async (req, res, next) => {
-  console.log(req.body)
   const rate = req.body.rate;
   const amount = req.body.amount;
   const total_spent = req.body.total_spent;
@@ -448,43 +469,49 @@ exports.createTransaction = async (req, res, next) => {
   const errors = validationResult(req);
   const owner_id = getTokenOwner(req)
   try {
-    const balance = await Balance.findByPk(balance_id)
-    if (balance === null) {
-      return res.status(400).json({ message: "Balance invalid" })
-    }
-    const portfolio = await Portfolio.findByPk(balance.portfolio_id)
-    if (portfolio === null || portfolio.owner_id != owner_id) {
-      return res.status(400).json({ message: "Balance invalid" })
-    }
-    const tx = await Transaction.create({
-      rate: rate,
-      amount: amount,
-      total_spent: total_spent,
-      type: type,
-      date: date,
-      fee: fee,
-      note: note,
-      balance_id: balance_id,
-    })
-    if (tx.type.toLowerCase() == "buy") {
-      balance.set({
-        amount: Number(balance.amount) + Number(tx.amount),
-        cost: Number(balance.cost) + Number(tx.total_spent),
+    if (errors.isEmpty()) {
+      const balance = await Balance.findByPk(balance_id)
+      if (balance === null) {
+        return res.status(400).json({ message: "Balance invalid" })
+      }
+      const portfolio = await Portfolio.findByPk(balance.portfolio_id)
+      if (portfolio === null || portfolio.owner_id != owner_id) {
+        return res.status(400).json({ message: "Balance invalid" })
+      }
+      const tx = await Transaction.create({
+        rate: rate,
+        amount: amount,
+        total_spent: total_spent,
+        type: type,
+        date: date,
+        fee: fee,
+        note: note,
+        balance_id: balance_id,
       })
-    }
-    else {
-      balance.set({
-        amount: Number(balance.amount) - Number(tx.amount),
-        cost: Number(balance.cost) - Number(tx.total_spent),
+      if (tx.type.toLowerCase() == "buy") {
+        balance.set({
+          amount: Number(balance.amount) + Number(tx.amount),
+          cost: Number(balance.cost) + Number(tx.total_spent),
+        })
+      }
+      else {
+        balance.set({
+          amount: Number(balance.amount) - Number(tx.amount),
+          cost: Number(balance.cost) - Number(tx.total_spent),
+        })
+      }
+      await balance.save()
+      const full_balance = await getFullBalance(balance.balance_id)
+      return res.status(200).json({
+        message: "Transaction created successfully!",
+        transaction: tx,
+        balance: full_balance[0]
       })
+    } else {
+      return res.status(422).json({
+        message: "Parameters are not correct",
+      });
     }
-    await balance.save()
-    const full_balance = await getFullBalance(balance.balance_id)
-    return res.status(200).json({
-      message: "Transaction created successfully!",
-      transaction: tx,
-      balance: full_balance[0]
-    })
   }
   catch (e) {
     console.error(e)
@@ -508,51 +535,58 @@ exports.updateTransaction = async (req, res, next) => {
   const note = req.body.note;
   const balance_id = req.body.balance_id;
   const owner_id = getTokenOwner(req)
+  const errors = validationResult(req);
   try {
-    const tx = await Transaction.findByPk(transaction_id)
-    if (tx === null) {
-      return res.status(400).json({ message: "Transaction invalid" })
-    }
-    const balance = await Balance.findByPk(tx.balance_id)
-    if (balance === null) {
-      return res.status(400).json({ message: "Balance invalid" })
-    }
-    const portfolio = await Portfolio.findByPk(balance.portfolio_id)
-    if (portfolio === null || portfolio.owner_id != owner_id) {
-      return res.status(400).json({ message: "Balance invalid" })
-    }
-    if (tx.type.toLowerCase() === "sell") {
-      balance.set({
-        amount: Number(balance.amount) + Number(tx.amount),
-        cost: Number(balance.cost) + Number(tx.total_spent),
+    if (errors.isEmpty()) {
+      const tx = await Transaction.findByPk(transaction_id)
+      if (tx === null) {
+        return res.status(400).json({ message: "Transaction invalid" })
+      }
+      const balance = await Balance.findByPk(tx.balance_id)
+      if (balance === null) {
+        return res.status(400).json({ message: "Balance invalid" })
+      }
+      const portfolio = await Portfolio.findByPk(balance.portfolio_id)
+      if (portfolio === null || portfolio.owner_id != owner_id) {
+        return res.status(400).json({ message: "Balance invalid" })
+      }
+      if (tx.type.toLowerCase() === "sell") {
+        balance.set({
+          amount: Number(balance.amount) + Number(tx.amount),
+          cost: Number(balance.cost) + Number(tx.total_spent),
+        })
+        balance.set({
+          amount: Number(balance.amount) - Number(amount),
+          cost: Number(balance.cost) - Number(total_spent),
+        })
+      }
+      else {
+        balance.set({
+          amount: Number(balance.amount) - Number(tx.amount),
+          cost: Number(balance.cost) - Number(tx.total_spent),
+        })
+        balance.set({
+          amount: Number(balance.amount) + Number(amount),
+          cost: Number(balance.cost) + Number(total_spent),
+        })
+      }
+      await balance.save()
+      tx.set({
+        rate: rate,
+        amount: amount,
+        total_spent: total_spent,
+        date: date,
+        fee: fee,
+        note: note
       })
-      balance.set({
-        amount: Number(balance.amount) - Number(amount),
-        cost: Number(balance.cost) - Number(total_spent),
-      })
+      updatedTx = await tx.save()
+      const full_balance = await getFullBalance(balance.balance_id)
+      return res.status(200).json({ message: "Transaction updated", transaction: updatedTx, balance: full_balance[0] });
+    } else {
+      return res.status(422).json({
+        message: "Parameters are not correct",
+      });
     }
-    else {
-      balance.set({
-        amount: Number(balance.amount) - Number(tx.amount),
-        cost: Number(balance.cost) - Number(tx.total_spent),
-      })
-      balance.set({
-        amount: Number(balance.amount) + Number(amount),
-        cost: Number(balance.cost) + Number(total_spent),
-      })
-    }
-    await balance.save()
-    tx.set({
-      rate: rate,
-      amount: amount,
-      total_spent: total_spent,
-      date: date,
-      fee: fee,
-      note: note
-    })
-    updatedTx = await tx.save()
-    const full_balance = await getFullBalance(balance.balance_id)
-    return res.status(200).json({ message: "Transaction updated", transaction: updatedTx, balance: full_balance[0] });
   } catch (e) {
     console.error(e)
     return res.status(500).json({ message: "Something went wrong" })
