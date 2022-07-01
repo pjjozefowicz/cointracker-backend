@@ -1,0 +1,537 @@
+{
+	"info": {
+		"_postman_id": "93b564bb-1252-46c9-be04-0ec9a74e369a",
+		"name": "CoinTracker",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Account",
+			"item": [
+				{
+					"name": "Balance",
+					"item": [
+						{
+							"name": "Get balance by id",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/account/balance/id",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"balance",
+										"id"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create balance",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/account/balance",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"balance"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete balance",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/account/balance/id",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"balance",
+										"id"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get balances",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/account/balances",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"balances"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update balance",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/account/balance/id",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"balance",
+										"id"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Transaction",
+					"item": [
+						{
+							"name": "Update transaction",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/account/transaction/id",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"transaction",
+										"id"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get transactions",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/account/transactions",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"transactions"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get transaction",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/account/transaction/id",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"transaction",
+										"id"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create transaction",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"rate\": 54000,\n    \"amount\": 1,\n    \"total_spent\": 27000,\n    \"type\": \"Buy\",\n    \"base_id\": \"dc321130-790d-4d2b-af9c-63e95480565b\",\n    \"quote_id\": \"517c4f93-e886-4f38-9681-af38621a54df\",\n    \"date\": \"1999-01-08\",\n    \"fee\": 0,\n    \"note\": \"notesdf\",\n    \"portfolio_id\": \"14a07a99-20b6-4a34-879c-74bcae6f371c\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/account/transaction",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"transaction"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete transaction",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/account/transaction/id",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"transaction",
+										"id"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Portfolio",
+					"item": [
+						{
+							"name": "Create portfolio",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/account/portfolio",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"portfolio"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get portfolios",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/account/portfolios",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"portfolios"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update portfolio",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/account/portfolio/id",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"portfolio",
+										"id"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get portfolio by id",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/account/portfolio/id",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"portfolio",
+										"id"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete portfolio by id",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/account/portfolio/id",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"account",
+										"portfolio",
+										"id"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Assets",
+			"item": [
+				{
+					"name": "Update coin",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"coingecko_id\": \"litecoin\",\n    \"name\": \"litecoin\",\n    \"code\": \"LTC\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/assets/coin/73841194-6550-4ae7-8718-fc2aaf512148",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"assets",
+								"coin",
+								"73841194-6550-4ae7-8718-fc2aaf512148"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get coin by id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/assets/coin/id",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"assets",
+								"coin",
+								"id"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete coin",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"bitcoin\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/assets/coin",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"assets",
+								"coin"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create coin",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"bitcoin\",\n    \"code\": \"BTC\",\n    \"coingecko_id\": \"bitcoin\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/assets/coin",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"assets",
+								"coin"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get supported coins",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/assets/coins",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"assets",
+								"coins"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Get users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/admin/users",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"admin",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create user",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"auth0_id\": 9549589\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/admin/user",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"admin",
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete user",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"auth0_id\": 12345678\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/admin/user",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"admin",
+								"user"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
