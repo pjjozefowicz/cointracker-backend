@@ -1,4 +1,4 @@
-# coinTracker-backend
+# cointracker-backend
 
 Track your crypto assets in cointracker portfolio!
 
