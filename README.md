@@ -4,7 +4,7 @@ Track your crypto assets in cointracker portfolio!
 
 You can use docker compose to run the whole thing.
 
-1. Run docker-compose up in folder which contains the `docker-compose.yml` file listed below
+1. Run docker-compose up in folder which contains the `docker-compose.yaml` file listed below
 2. Open localhost:3000 in your browser
 
 Here is the `docker-compose.yaml` that powers the whole setup.
