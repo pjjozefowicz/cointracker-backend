@@ -41,7 +41,13 @@ volumes:
 ```
 Backend written in express.js
 
-### Build setup 
+### Dev setup
+
 ```bash
+# install dependencies
+$ npm install
+
+# run dev 
+$ npm run dev
 
 ```
