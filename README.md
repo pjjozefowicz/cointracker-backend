@@ -6,6 +6,7 @@ You can use docker compose to run the whole thing.
 
 1. Run docker-compose up in folder which contains the `docker-compose.yaml` file listed below
 2. Open localhost:3000 in your browser
+3. If you see 404 page after authorization with Auth0 make sure that port 3000 is present in redirect url
 
 Here is the `docker-compose.yaml` that powers the whole setup.
 
