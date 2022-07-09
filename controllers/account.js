@@ -298,6 +298,11 @@ exports.createBalance = async (req, res, next) => {
       const portfolio = await Portfolio.findByPk(portfolio_id)
       if (portfolio === null || portfolio.owner_id != owner_id) {
         return res.status(404).json({ message: "There's no such portfolio" })
+      }
+      // check if user already has this coin in his balance
+      const coin = await Balance.findOne({ where: {portfolio_id: portfolio_id, coin_id: coin_id}})
+      if (coin !== null) {
+        return res.status(404).json({ message: "You already have this coin added" })
       } else {
         const currency = await Cryptocurrency.findByPk(coin_id)
         if (currency === null) {
